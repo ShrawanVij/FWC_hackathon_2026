@@ -99,6 +99,9 @@ function ManageUsers() {
   const [filter, setFilter]     = useState("all");
   const [search, setSearch]     = useState("");
   const [toggling, setToggling] = useState(null);
+  const [resetModal, setResetModal] = useState(null); // { id, email }
+  const [newPassword, setNewPassword] = useState("");
+  const [resetting, setResetting] = useState(false);
 
   const fetchUsers = async (role = "") => {
     setLoading(true);
@@ -111,6 +114,18 @@ function ManageUsers() {
   };
 
   useEffect(() => { fetchUsers(filter); }, [filter]);
+
+  const handleResetPassword = async () => {
+    if (!newPassword || newPassword.length < 6) return alert("Password must be at least 6 characters");
+    setResetting(true);
+    try {
+      const d = await adminAPI.resetPassword(resetModal.id, newPassword);
+      alert(d.message);
+      setResetModal(null);
+      setNewPassword("");
+    } catch (e) { alert(e.message); }
+    finally { setResetting(false); }
+  };
 
   const toggleUser = async (id) => {
     setToggling(id);
@@ -199,7 +214,7 @@ function ManageUsers() {
                       {u.isActive ? "Active" : "Inactive"}
                     </span>
                   </td>
-                  <td>
+                  <td style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                     {u.role !== "admin" ? (
                       <button
                         className={`${styles.toggleBtn} ${u.isActive ? styles.deactivateBtn : styles.activateBtn}`}
@@ -211,12 +226,50 @@ function ManageUsers() {
                     ) : (
                       <span className={styles.muted}>Protected</span>
                     )}
+                    <button
+                      className={styles.toggleBtn}
+                      style={{ background: "#7c3aed22", color: "#a78bfa", border: "1px solid #7c3aed55" }}
+                      onClick={() => { setResetModal({ id: u._id, email: u.email }); setNewPassword(""); }}
+                    >
+                      🔑 Reset
+                    </button>
                   </td>
                 </tr>
               ))}
             </tbody>
           </table>
           {filtered.length === 0 && <p className={styles.empty}>No users found.</p>}
+        </div>
+      )}
+
+      {resetModal && (
+        <div style={{ position: "fixed", inset: 0, background: "#000a", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div style={{ background: "#1e1e2e", border: "1px solid #7c3aed55", borderRadius: 12, padding: 32, width: 360, display: "flex", flexDirection: "column", gap: 16 }}>
+            <h3 style={{ margin: 0, color: "#a78bfa" }}>🔑 Reset Password</h3>
+            <p style={{ margin: 0, color: "#aaa", fontSize: 14 }}>User: <strong style={{ color: "#fff" }}>{resetModal.email}</strong></p>
+            <input
+              type="password"
+              placeholder="New password (min 6 chars)"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              style={{ padding: "10px 14px", borderRadius: 8, border: "1px solid #7c3aed55", background: "#111", color: "#fff", fontSize: 14 }}
+            />
+            <div style={{ display: "flex", gap: 10 }}>
+              <button
+                onClick={handleResetPassword}
+                disabled={resetting}
+                style={{ flex: 1, padding: "10px 0", borderRadius: 8, background: "#7c3aed", color: "#fff", border: "none", cursor: "pointer", fontWeight: 600 }}
+              >
+                {resetting ? "Resetting..." : "Reset Password"}
+              </button>
+              <button
+                onClick={() => setResetModal(null)}
+                style={{ flex: 1, padding: "10px 0", borderRadius: 8, background: "#ffffff11", color: "#aaa", border: "1px solid #ffffff22", cursor: "pointer" }}
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

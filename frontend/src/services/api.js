@@ -1,4 +1,4 @@
-const BASE_URL = "https://fwchackathon.onrender.com/api";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 const request = async (endpoint, options = {}) => {
   const token = localStorage.getItem("talentos_token");
@@ -35,9 +35,28 @@ export const jobsAPI = {
 };
 
 export const candidateAPI = {
-  getProfile:    ()  => request("/candidate/profile"),
-  updateProfile: (p) => request("/candidate/profile", { method: "PUT", body: JSON.stringify(p) }),
-  getOnboarding: ()  => request("/candidate/onboarding"),
+  getProfile:       ()        => request("/candidate/profile"),
+  updateProfile:    (p)       => request("/candidate/profile",              { method: "PUT",    body: JSON.stringify(p) }),
+  getOnboarding:    ()        => request("/candidate/onboarding"),
+  submitDoc:        (p)       => request("/candidate/onboarding/docs",      { method: "POST",   body: JSON.stringify(p) }),
+  deleteDoc:        (docId)   => request(`/candidate/onboarding/docs/${docId}`, { method: "DELETE" }),
+};
+
+export const hrAPI = {
+  getOnboarding: () => request("/hr/onboarding"),
+  bulkScreen: (formData) => {
+    const token = localStorage.getItem("talentos_token");
+    if (!token) throw new Error("Not authenticated — please log in again");
+    return fetch(`${BASE_URL}/hr/bulk-screen`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    }).then(async (res) => {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Bulk screening failed");
+      return data;
+    });
+  },
 };
 
 export const interviewAPI = {
@@ -49,7 +68,7 @@ export const interviewAPI = {
 };
 
 export const aiAPI = {
-  rankCandidates:             (jobId) => request(`/ai/rank-candidates/${jobId}`,   { method: "POST" }),
+  rankCandidates:             (jobId, topN) => request(`/ai/rank-candidates/${jobId}`, { method: "POST", body: JSON.stringify({ topN }) }),
   startMockInterview:         (p)     => request("/ai/mock-interview/start",        { method: "POST", body: JSON.stringify(p) }),
   evaluateMockInterview:      (p)     => request("/ai/mock-interview/evaluate",     { method: "POST", body: JSON.stringify(p) }),
   reviewProfile:              ()      => request("/ai/profile-review",              { method: "POST" }),
@@ -60,6 +79,7 @@ export const aiAPI = {
 export const adminAPI = {
   getUsers:      (params = "") => request(`/admin/users${params}`),
   toggleUser:    (id)          => request(`/admin/users/${id}/toggle`, { method: "PATCH" }),
+  resetPassword: (id, newPassword) => request(`/admin/users/${id}/reset-password`, { method: "PATCH", body: JSON.stringify({ newPassword }) }),
   getAnalytics:  ()            => request("/admin/analytics"),
   getAllJobs:     ()            => request("/admin/jobs"),
   toggleJob:     (id)          => request(`/admin/jobs/${id}/toggle`,  { method: "PATCH" }),

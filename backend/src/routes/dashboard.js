@@ -1,13 +1,17 @@
 import { Router } from "express";
+import multer from "multer";
 import { protect, restrictTo } from "../middleware/auth.js";
+import { bulkScreen } from "../controllers/bulkScreenController.js";
+
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } });
 import {
   getAllJobs, getMyJobs, createJob, deleteJob,
   applyToJob, getAppliedJobs, adminGetAllJobs, toggleJobStatus,
 } from "../controllers/jobController.js";
 import { rankCandidates, startMockInterview, evaluateMockInterview, reviewProfile, generateInterviewQuestions, evaluateInterview } from "../controllers/aiController.js";
-import { updateProfile, getProfile, getOnboarding } from "../controllers/candidateController.js";
+import { updateProfile, getProfile, getOnboarding, getHROnboarding, submitOnboardingDoc, deleteOnboardingDoc } from "../controllers/candidateController.js";
 import { scheduleInterview, getHRInterviews, getCandidateInterviews, updateInterviewStatus, submitAnswers } from "../controllers/interviewController.js";
-import { getAllUsers, toggleUserStatus, getAnalytics, getWorkforceAnalytics, getAIInsights } from "../controllers/adminController.js";
+import { getAllUsers, toggleUserStatus, resetUserPassword, getAnalytics, getWorkforceAnalytics, getAIInsights } from "../controllers/adminController.js";
 
 const router = Router();
 
@@ -22,7 +26,10 @@ router.post("/jobs/:id/apply",protect, restrictTo("candidate"), applyToJob);
 // ── Candidate ─────────────────────────────────────────────────────────────────
 router.get("/candidate/profile",    protect, restrictTo("candidate"), getProfile);
 router.put("/candidate/profile",    protect, restrictTo("candidate"), updateProfile);
-router.get("/candidate/onboarding", protect, restrictTo("candidate"), getOnboarding);
+router.get("/candidate/onboarding",              protect, restrictTo("candidate"), getOnboarding);
+router.post("/candidate/onboarding/docs",        protect, restrictTo("candidate"), submitOnboardingDoc);
+router.delete("/candidate/onboarding/docs/:docId", protect, restrictTo("candidate"), deleteOnboardingDoc);
+router.get("/hr/onboarding",                     protect, restrictTo("hr"),        getHROnboarding);
 
 // ── Interviews ────────────────────────────────────────────────────────────────
 router.post("/interviews",                protect, restrictTo("hr"),        scheduleInterview);
@@ -39,9 +46,14 @@ router.post("/ai/profile-review",           protect, restrictTo("candidate"), re
 router.post("/ai/interview-questions/:id",  protect, restrictTo("candidate"), generateInterviewQuestions);
 router.post("/ai/evaluate-interview/:id",   protect, restrictTo("hr"),        evaluateInterview);
 
+// ── Bulk Resume Screening ─────────────────────────────────────────────────────
+router.post("/hr/bulk-screen", protect, restrictTo("hr"), upload.single("zipFile"), bulkScreen);
+
+
 // ── Admin ─────────────────────────────────────────────────────────────────────
 router.get("/admin/users",            protect, restrictTo("admin"), getAllUsers);
 router.patch("/admin/users/:id/toggle",protect, restrictTo("admin"), toggleUserStatus);
+router.patch("/admin/users/:id/reset-password", protect, restrictTo("admin"), resetUserPassword);
 router.get("/admin/analytics",        protect, restrictTo("admin"), getAnalytics);
 router.get("/admin/jobs",             protect, restrictTo("admin"), adminGetAllJobs);
 router.patch("/admin/jobs/:id/toggle",  protect, restrictTo("admin"), toggleJobStatus);

@@ -1,4 +1,4 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 import User from "../models/User.js";
 import Job from "../models/Job.js";
 import Interview from "../models/Interview.js";
@@ -199,14 +199,33 @@ export const getWorkforceAnalytics = async (req, res) => {
   }
 };
 
+// PATCH /api/admin/users/:id/reset-password
+export const resetUserPassword = async (req, res) => {
+  try {
+    const { newPassword } = req.body;
+    if (!newPassword || newPassword.length < 6)
+      return res.status(400).json({ success: false, message: "Password must be at least 6 characters" });
+
+    const user = await User.findById(req.params.id).select("+passwordHash");
+    if (!user) return res.status(404).json({ success: false, message: "User not found" });
+
+    const bcrypt = await import("bcryptjs");
+    user.passwordHash = await bcrypt.default.hash(newPassword, 12);
+    await user.save({ validateBeforeSave: false });
+
+    res.json({ success: true, message: `Password reset for ${user.email}` });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};
+
 // POST /api/admin/ai-insights
 export const getAIInsights = async (req, res) => {
   try {
     const { metrics } = req.body;
     if (!metrics) return res.status(400).json({ success: false, message: "metrics required" });
 
-    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const { healthScore, healthLabel, kpi, funnel, quality, skillGaps } = metrics;
     const topGaps = (skillGaps || [])
@@ -251,8 +270,12 @@ Generate an executive workforce intelligence report. Return ONLY valid JSON (no 
   "recommendations": ["actionable recommendation", "second recommendation", "third recommendation"]
 }`;
 
-    const result = await model.generateContent(prompt);
-    const text   = result.response.text().replace(/```json|```/g, "").trim();
+    const completion = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [{ role: "user", content: prompt }],
+      temperature: 0.7,
+    });
+    const text = completion.choices[0].message.content.replace(/```json|```/g, "").trim();
     const report = JSON.parse(text);
 
     res.json({ success: true, report });
