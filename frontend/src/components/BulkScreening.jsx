@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, Fragment } from "react";
 import { bulkScreeningAPI } from "../services/api";
 import styles from "./BulkScreening.module.css";
 
@@ -145,6 +145,17 @@ function FactorPanel({ candidate, checkedFactors, onToggleCheck }) {
                       {f.label}
                     </div>
                     <FactorBar factor={f} value={val} />
+                    {f.key === "certifications" && (
+                      <div style={{
+                        fontSize: 10, marginTop: 3,
+                        whiteSpace: "normal", lineHeight: 1.4,
+                        color: candidate.extractedCertifications?.length > 0 ? "#64748b" : "#334155",
+                      }}>
+                        {candidate.extractedCertifications?.length > 0
+                          ? candidate.extractedCertifications.join(", ")
+                          : "None detected"}
+                      </div>
+                    )}
                   </div>
                 </div>
               );
@@ -201,7 +212,7 @@ function FactorFilterPanel({ filters, onFilterChange, onReset, matchCount, total
         </div>
         {hasAnyFilter && (
           <button onClick={onReset} style={{
-            fontSize: 10, color: "#ef4444", background: "none", border: "none",
+            fontSize: 10, color: "#ef4444", background: "none",
             cursor: "pointer", padding: "2px 6px", borderRadius: 4,
             border: "1px solid #ef444433",
           }}>
@@ -596,16 +607,20 @@ function TalentGenome({ candidate, onBack }) {
             </div>
           </div>
 
-          {(candidate.extractedCertifications?.length > 0) && (
-            <div className={styles.card}>
-              <div className={styles.divLabel}>Certifications</div>
+          <div className={styles.card}>
+            <div className={styles.divLabel}>Certifications</div>
+            {candidate.extractedCertifications?.length > 0 ? (
               <div className={styles.tagList}>
-                {candidate.extractedCertifications.map((c) => (
-                  <span key={c} className={styles.tag}>{c}</span>
+                {candidate.extractedCertifications.map((c, i) => (
+                  <span key={i} className={styles.tag}>{c}</span>
                 ))}
               </div>
-            </div>
-          )}
+            ) : (
+              <div style={{ fontSize: 13, color: "var(--text-muted)", marginTop: 6 }}>
+                No certifications detected
+              </div>
+            )}
+          </div>
 
           {(candidate.skills?.length > 0) && (
             <div className={styles.card}>
@@ -891,7 +906,8 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
         </div>
       </div>
 
-      <div className={styles.card} style={{ padding: 0 }}>
+      <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
+      <div className={styles.card} style={{ padding: 0, flex: 1 }}>
         {visible.length === 0 ? (
           <div className={styles.empty}>
             <div className={styles.emptyIcon}></div>
@@ -914,7 +930,8 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
               </thead>
               <tbody>
                 {visible.map((c) => (
-                  <tr key={c._id}>
+                  <Fragment key={c._id}>
+                  <tr style={{ cursor: "pointer" }} onClick={() => toggleRow(c._id)}>
                     <td>
                       <span className={`${styles.rankBadge} ${c.rank <= 3 ? styles.top : ""}`}>
                         {c.rank}
@@ -943,7 +960,7 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
                     <td>
                       <span className={statusClass(c.status)}>{c.status}</span>
                     </td>
-                    <td>
+                    <td onClick={(e) => e.stopPropagation()}>
                       <div className={styles.actions}>
                         <button className={`${styles.actionBtn} ${styles.genome}`}
                           onClick={() => onViewGenome(c)}>
@@ -973,13 +990,18 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
                       </div>
                     </td>
                   </tr>
+                  {expandedRows[c._id] && (
+                    <FactorPanel candidate={c} checkedFactors={checkedFactors} onToggleCheck={toggleCheck} />
+                  )}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
           </div>
-        </div>
+        )}
+      </div>
 
-        {/* ── Factor Filter Sidebar ── */}
+      {/* ── Factor Filter Sidebar ── */}
         {showFilterPanel && (
           <FactorFilterPanel
             filters={factorFilters}
