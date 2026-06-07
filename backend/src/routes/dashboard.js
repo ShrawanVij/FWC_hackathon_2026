@@ -2,6 +2,7 @@ import { Router } from "express";
 import multer from "multer";
 import { protect, restrictTo } from "../middleware/auth.js";
 import { bulkScreen } from "../controllers/bulkScreenController.js";
+import { createSession, getSessions, getSession, getCandidates, updateCandidateStatus, exportSession } from "../controllers/bulkScreeningController.js";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } });
 import {
@@ -59,5 +60,13 @@ router.get("/admin/jobs",             protect, restrictTo("admin"), adminGetAllJ
 router.patch("/admin/jobs/:id/toggle",  protect, restrictTo("admin"), toggleJobStatus);
 router.get("/admin/workforce",          protect, restrictTo("admin"), getWorkforceAnalytics);
 router.post("/admin/ai-insights",       protect, restrictTo("admin"), getAIInsights);
+
+// ── Bulk Screening Sessions ─────────────────────────────────────────────────────
+router.post("/hr/bulk-screening/sessions",                    protect, restrictTo("hr"), upload.single("zip"), createSession);
+router.get("/hr/bulk-screening/sessions",                     protect, restrictTo("hr"), getSessions);
+router.get("/hr/bulk-screening/sessions/:id",                 protect, restrictTo("hr"), getSession);
+router.get("/hr/bulk-screening/sessions/:id/candidates",      protect, restrictTo("hr"), getCandidates);
+router.patch("/hr/bulk-screening/candidates/:id/status",      protect, restrictTo("hr"), updateCandidateStatus);
+router.get("/hr/bulk-screening/sessions/:id/export",          protect, restrictTo("hr"), exportSession);
 
 export default router;
