@@ -720,7 +720,7 @@ export default function CandidateDashboard() {
   const [loadingJobs, setLoadingJobs] = useState(true);
 
   const fetchApplied = () => jobsAPI.getApplied().then((d) => setAppliedJobs(d.jobs)).catch(console.error);
-  const fetchInterviews = () => interviewAPI.getCandidate().then((d) => setInterviews(d.interviews));
+  const fetchInterviews = () => interviewAPI.getCandidate().then((d) => setInterviews(d.interviews)).catch(console.error);
 
   useEffect(() => {
     fetchApplied().finally(() => setLoadingJobs(false));

@@ -793,7 +793,7 @@ export default function HRDashboard() {
   const [loadingJobs, setLoadingJobs] = useState(true);
 
   const fetchJobs       = () => jobsAPI.getMy().then((d) => setJobs(d.jobs)).finally(() => setLoadingJobs(false));
-  const fetchInterviews = () => interviewAPI.getHR().then((d) => setInterviews(d.interviews));
+  const fetchInterviews = () => interviewAPI.getHR().then((d) => setInterviews(d.interviews)).catch(console.error);
 
   useEffect(() => { fetchJobs(); fetchInterviews(); }, []);
 

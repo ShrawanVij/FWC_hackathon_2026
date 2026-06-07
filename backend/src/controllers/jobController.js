@@ -80,7 +80,7 @@ export const applyToJob = async (req, res) => {
 // GET /api/jobs/applied — Candidate: jobs I applied to
 export const getAppliedJobs = async (req, res) => {
   try {
-    const jobs = await Job.find({ "applicants.candidate": req.user._id, isActive: true })
+    const jobs = await Job.find({ "applicants.candidate": req.user._id })
       .populate("postedBy", "fullName companyId")
       .select("title company location type salaryRange applicants createdAt");
 

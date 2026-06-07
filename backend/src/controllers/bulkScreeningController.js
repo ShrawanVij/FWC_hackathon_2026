@@ -235,6 +235,8 @@ export const getSession = async (req, res) => {
   try {
     const session = await BulkSession.findById(req.params.id);
     if (!session) return res.status(404).json({ success: false, message: "Session not found" });
+    if (session.createdBy.toString() !== req.user._id.toString())
+      return res.status(403).json({ success: false, message: "Access denied" });
 
     const candidates = await BulkCandidate.find({ session: req.params.id });
     const total      = candidates.length;
@@ -257,6 +259,11 @@ export const getSession = async (req, res) => {
 // GET /api/hr/bulk-screening/sessions/:id/candidates
 export const getCandidates = async (req, res) => {
   try {
+    const session = await BulkSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ success: false, message: "Session not found" });
+    if (session.createdBy.toString() !== req.user._id.toString())
+      return res.status(403).json({ success: false, message: "Access denied" });
+
     const candidates = await BulkCandidate.find({ session: req.params.id }).sort({ rank: 1 });
     res.json({ success: true, candidates });
   } catch (err) {
@@ -270,7 +277,14 @@ export const updateCandidateStatus = async (req, res) => {
     const { status } = req.body;
     if (!["pending", "shortlisted", "rejected"].includes(status))
       return res.status(400).json({ success: false, message: "Invalid status" });
-    const candidate = await BulkCandidate.findByIdAndUpdate(req.params.id, { status }, { new: true });
+
+    const candidate = await BulkCandidate.findById(req.params.id).populate("session", "createdBy");
+    if (!candidate) return res.status(404).json({ success: false, message: "Candidate not found" });
+    if (candidate.session.createdBy.toString() !== req.user._id.toString())
+      return res.status(403).json({ success: false, message: "Access denied" });
+
+    candidate.status = status;
+    await candidate.save();
     res.json({ success: true, candidate });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });
@@ -280,7 +294,11 @@ export const updateCandidateStatus = async (req, res) => {
 // GET /api/hr/bulk-screening/sessions/:id/export
 export const exportSession = async (req, res) => {
   try {
-    const session    = await BulkSession.findById(req.params.id);
+    const session = await BulkSession.findById(req.params.id);
+    if (!session) return res.status(404).json({ success: false, message: "Session not found" });
+    if (session.createdBy.toString() !== req.user._id.toString())
+      return res.status(403).json({ success: false, message: "Access denied" });
+
     const candidates = await BulkCandidate.find({ session: req.params.id }).sort({ rank: 1 });
 
     const rows = candidates.map((c) => ({

@@ -77,18 +77,21 @@ export const login = async (req, res) => {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 
-    // HR: verify companyId matches
-    if (role === "hr" && companyId) {
-      if (user.companyId !== companyId.trim()) {
-        return res.status(401).json({ success: false, message: "Company ID does not match" });
+    // HR: verify companyId matches (required)
+    if (role === "hr") {
+      if (!companyId || user.companyId !== companyId.trim()) {
+        return res.status(401).json({ success: false, message: "Invalid credentials" });
       }
     }
 
-    // Admin: verify admin key
-    if (role === "admin" && adminKey) {
+    // Admin: verify admin key (required)
+    if (role === "admin") {
+      if (!adminKey) {
+        return res.status(401).json({ success: false, message: "Admin key is required" });
+      }
       const keyOk = await user.compareAdminKey(adminKey);
       if (!keyOk) {
-        return res.status(401).json({ success: false, message: "Invalid admin key" });
+        return res.status(401).json({ success: false, message: "Invalid credentials" });
       }
     }
 

@@ -3,6 +3,8 @@ import User from "../models/User.js";
 import Job from "../models/Job.js";
 import Interview from "../models/Interview.js";
 
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
 // GET /api/admin/users
 export const getAllUsers = async (req, res) => {
   try {
@@ -223,8 +225,6 @@ export const getAIInsights = async (req, res) => {
   try {
     const { metrics } = req.body;
     if (!metrics) return res.status(400).json({ success: false, message: "metrics required" });
-
-    const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
     const { healthScore, healthLabel, kpi, funnel, quality, skillGaps } = metrics;
     const topGaps = (skillGaps || [])
