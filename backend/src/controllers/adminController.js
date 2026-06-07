@@ -209,8 +209,7 @@ export const resetUserPassword = async (req, res) => {
     const user = await User.findById(req.params.id).select("+passwordHash");
     if (!user) return res.status(404).json({ success: false, message: "User not found" });
 
-    const bcrypt = await import("bcryptjs");
-    user.passwordHash = await bcrypt.default.hash(newPassword, 12);
+    user.passwordHash = newPassword; // pre-save hook hashes it
     await user.save({ validateBeforeSave: false });
 
     res.json({ success: true, message: `Password reset for ${user.email}` });

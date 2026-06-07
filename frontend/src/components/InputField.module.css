@@ -2,10 +2,10 @@
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
-  background: var(--bg-input);
+  gap: 10px;
+  background: var(--bg-surface);
   border: 1.5px solid var(--border);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 10px 14px;
   transition: border-color var(--transition), box-shadow var(--transition);
   cursor: text;
@@ -13,19 +13,19 @@
 
 .wrapper.focused {
   border-color: var(--accent, var(--cand-accent));
-  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, var(--cand-accent)) 15%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent, var(--cand-accent)) 12%, transparent);
 }
 
 .iconLeft {
-  font-size: 16px;
-  opacity: 0.6;
+  display: flex;
+  align-items: center;
+  color: var(--text-muted);
   flex-shrink: 0;
-  line-height: 1;
-  transition: opacity var(--transition);
+  transition: color var(--transition);
 }
 
 .wrapper.focused .iconLeft {
-  opacity: 1;
+  color: var(--accent, var(--cand-accent));
 }
 
 .inner {
@@ -45,18 +45,17 @@
   pointer-events: none;
   transition: all var(--transition);
   white-space: nowrap;
-  font-family: 'DM Sans', sans-serif;
   font-weight: 400;
 }
 
 .wrapper.focused .label,
 .wrapper.filled .label {
   top: 0;
-  transform: translateY(-14px);
+  transform: translateY(-13px);
   font-size: 11px;
   color: var(--accent, var(--cand-accent));
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
 }
 
 .input {
@@ -64,7 +63,6 @@
   border: none;
   outline: none;
   color: var(--text-primary);
-  font-family: 'DM Sans', sans-serif;
   font-size: 14px;
   font-weight: 400;
   padding-top: 8px;
@@ -80,14 +78,15 @@
   background: none;
   border: none;
   cursor: pointer;
-  font-size: 15px;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
   padding: 0;
   line-height: 1;
-  opacity: 0.5;
-  transition: opacity var(--transition);
+  transition: color var(--transition);
   flex-shrink: 0;
 }
 
 .toggle:hover {
-  opacity: 1;
+  color: var(--text-primary);
 }

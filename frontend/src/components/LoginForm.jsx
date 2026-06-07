@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import InputField from "./InputField";
 import { authAPI } from "../services/api.js";
 import styles from "./LoginForm.module.css";
+import { User, Mail, Tag, Key, LockIcon, AlertTriangle } from "./Icons";
 
 const roleConfig = {
   candidate: {
     accent: "var(--cand-accent)",
-    glow: "var(--cand-glow)",
     loginTitle: "Welcome Back",
     loginSubtitle: "Sign in to explore opportunities",
     registerTitle: "Join TalentOS",
@@ -19,26 +19,24 @@ const roleConfig = {
   },
   hr: {
     accent: "var(--hr-accent)",
-    glow: "var(--hr-glow)",
     loginTitle: "HR Portal",
     loginSubtitle: "Manage your talent pipeline",
     registerTitle: "Register HR Account",
     registerSubtitle: "Set up your company recruiter access",
     emailLabel: "Work Email",
-    extraField: { label: "Company ID", icon: "", key: "companyId", autocomplete: "organization" },
+    extraField: { label: "Company ID", icon: <Tag size={16} />, key: "companyId", autocomplete: "organization" },
     loginBtn: "Access Portal",
     registerBtn: "Register",
     showRegister: true,
   },
   admin: {
     accent: "var(--admin-accent)",
-    glow: "var(--admin-glow)",
     loginTitle: "Admin Console",
     loginSubtitle: "Restricted — authorized access only",
     registerTitle: "Admin Console",
     registerSubtitle: "Restricted — authorized access only",
     emailLabel: "Admin Email",
-    extraField: { label: "Admin Key", icon: "", key: "adminKey", autocomplete: "off" },
+    extraField: { label: "Admin Key", icon: <Key size={16} />, key: "adminKey", autocomplete: "off" },
     loginBtn: "Enter Console",
     registerBtn: "Enter Console",
     showRegister: false,
@@ -54,29 +52,17 @@ export default function LoginForm({ role, onSuccess }) {
   const [fullName, setFullName] = useState("");
   const [extra, setExtra]       = useState("");
 
-  const [loading, setLoading]     = useState(false);
-  const [success, setSuccess]     = useState(false);
-  const [error, setError]         = useState("");
+  const [loading, setLoading]       = useState(false);
+  const [success, setSuccess]       = useState(false);
+  const [error, setError]           = useState("");
   const [successMsg, setSuccessMsg] = useState("");
 
-  // ✅ Full reset whenever role changes (key prop remounts but be safe)
-  useEffect(() => {
-    reset();
-  }, [role]);
-
-  // ✅ Cleanup on unmount so stale success state never bleeds into re-login
-  useEffect(() => {
-    return () => reset();
-  }, []);
+  useEffect(() => { reset(); }, [role]);
+  useEffect(() => { return () => reset(); }, []);
 
   const reset = () => {
-    setEmail("");
-    setPassword("");
-    setFullName("");
-    setExtra("");
-    setError("");
-    setSuccess(false);
-    setSuccessMsg("");
+    setEmail(""); setPassword(""); setFullName(""); setExtra("");
+    setError(""); setSuccess(false); setSuccessMsg("");
   };
 
   const switchMode = (m) => { reset(); setMode(m); };
@@ -89,7 +75,6 @@ export default function LoginForm({ role, onSuccess }) {
 
     try {
       let data;
-
       if (mode === "login") {
         const payload = { email, password, role };
         if (role === "hr"    && extra) payload.companyId = extra;
@@ -110,7 +95,6 @@ export default function LoginForm({ role, onSuccess }) {
       );
       setSuccess(true);
 
-      // ✅ Reset form state then hand off to context — prevents stale state on re-login
       setTimeout(() => {
         reset();
         onSuccess(data.token, data.user);
@@ -132,7 +116,7 @@ export default function LoginForm({ role, onSuccess }) {
     <form
       className={`${styles.form} ${styles[role]}`}
       onSubmit={handleSubmit}
-      style={{ "--accent": cfg.accent, "--glow": cfg.glow }}
+      style={{ "--accent": cfg.accent }}
       noValidate
     >
       <div className={styles.header}>
@@ -141,14 +125,13 @@ export default function LoginForm({ role, onSuccess }) {
       </div>
 
       <div className={styles.fields}>
-        {/* Full name — register only for candidate/hr */}
         {!isLogin && role !== "admin" && (
           <InputField
             label="Full Name"
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            icon=""
+            icon={<User size={16} />}
             accent={cfg.accent}
             autoComplete="name"
             required
@@ -160,13 +143,12 @@ export default function LoginForm({ role, onSuccess }) {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          icon=""
+          icon={<Mail size={16} />}
           accent={cfg.accent}
           autoComplete="email"
           required
         />
 
-        {/* HR companyId on login | Admin key always */}
         {cfg.extraField && (isLogin || role === "admin") && (
           <InputField
             label={cfg.extraField.label}
@@ -179,7 +161,6 @@ export default function LoginForm({ role, onSuccess }) {
           />
         )}
 
-        {/* HR companyId on register */}
         {cfg.extraField && !isLogin && role === "hr" && (
           <InputField
             label={cfg.extraField.label}
@@ -197,7 +178,7 @@ export default function LoginForm({ role, onSuccess }) {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          icon=""
+          icon={<LockIcon size={16} />}
           accent={cfg.accent}
           autoComplete={isLogin ? "current-password" : "new-password"}
           required
@@ -215,7 +196,11 @@ export default function LoginForm({ role, onSuccess }) {
         </div>
       )}
 
-      {error && <p className={styles.error}>{error}</p>}
+      {error && (
+        <p className={styles.error}>
+          <AlertTriangle size={13} /> {error}
+        </p>
+      )}
 
       <button
         type="submit"
@@ -225,7 +210,7 @@ export default function LoginForm({ role, onSuccess }) {
         {loading ? (
           <span className={styles.spinner} />
         ) : success ? (
-          <span className={styles.check}>✓ {successMsg}</span>
+          <span className={styles.check}>{successMsg}</span>
         ) : (
           btnLabel
         )}
@@ -240,7 +225,7 @@ export default function LoginForm({ role, onSuccess }) {
             className={styles.link}
             onClick={() => switchMode(isLogin ? "register" : "login")}
           >
-            {isLogin ? "Create one free →" : "Sign in →"}
+            {isLogin ? "Create one free" : "Sign in"}
           </button>
         </p>
       )}

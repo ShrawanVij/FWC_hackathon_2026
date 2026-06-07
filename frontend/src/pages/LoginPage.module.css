@@ -2,29 +2,28 @@
   min-height: 100vh;
   display: flex;
   align-items: stretch;
-  background: var(--bg-deep);
+  background: var(--bg-base);
 }
 
 .container {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1080px;
   margin: auto;
   display: flex;
   min-height: 100vh;
-  box-shadow: 0 0 80px rgba(0,0,0,0.6);
-  animation: scaleIn 0.4s ease both;
+  box-shadow: var(--shadow-lg);
+  animation: scaleIn 0.35s ease both;
 }
 
 @keyframes scaleIn {
-  from { opacity: 0; transform: scale(0.98); }
+  from { opacity: 0; transform: scale(0.985); }
   to   { opacity: 1; transform: scale(1); }
 }
 
-/* Right panel */
 .formPanel {
   width: 420px;
   flex-shrink: 0;
-  background: var(--bg-card);
+  background: var(--bg-surface);
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -57,7 +56,6 @@
   color: var(--text-primary);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .container {
     flex-direction: column;

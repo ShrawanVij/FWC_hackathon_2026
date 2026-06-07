@@ -16,8 +16,8 @@ function AppRouter() {
           alignItems: "center",
           justifyContent: "center",
           height: "100vh",
-          background: "#090e1a",
-          color: "#6b7fa3",
+          background: "#f1f5f9",
+          color: "#64748b",
           fontFamily: "DM Sans, sans-serif",
         }}
       >

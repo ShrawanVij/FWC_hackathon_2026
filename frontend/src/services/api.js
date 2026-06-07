@@ -75,7 +75,7 @@ export const bulkScreeningAPI = {
   },
   getSessions:           ()          => request("/hr/bulk-screening/sessions"),
   getSession:            (id)        => request(`/hr/bulk-screening/sessions/${id}`),
-  getCandidates:         (id)        => request(`/hr/bulk-screening/sessions/${id}/candidates`),
+  getCandidates:         (id, qs = "") => request(`/hr/bulk-screening/sessions/${id}/candidates${qs}`),
   updateCandidateStatus: (id, status) => request(`/hr/bulk-screening/candidates/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
   exportSession: (id) => {
     const token = localStorage.getItem("talentos_token");
