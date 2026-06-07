@@ -77,6 +77,7 @@ import rateLimit from "express-rate-limit";
 import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import dashboardRoutes from "./routes/dashboard.js";
+import apiRoutes       from "./routes/api.js";  
 
 const app = express();
 
@@ -109,6 +110,7 @@ app.use(
 
 app.use("/api/auth", authRoutes);
 app.use("/api", dashboardRoutes);
+app.use("/api",      apiRoutes);  
 
 app.get("/api/health", (_, res) =>
   res.json({ success: true, status: "ok", timestamp: new Date().toISOString() })
