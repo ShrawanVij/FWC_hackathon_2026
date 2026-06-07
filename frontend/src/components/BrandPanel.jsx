@@ -2,7 +2,7 @@ import styles from "./BrandPanel.module.css";
 
 const roleArt = {
   candidate: {
-    emoji: "🚀",
+    emoji: "",
     headline: "Find Your Next Big Role",
     tagline: "Thousands of companies are hiring right now.",
     stats: [
@@ -13,7 +13,7 @@ const roleArt = {
     color: "var(--cand-accent)",
   },
   hr: {
-    emoji: "🏆",
+    emoji: "",
     headline: "Build World-Class Teams",
     tagline: "Streamline hiring from sourcing to offer.",
     stats: [
@@ -24,7 +24,7 @@ const roleArt = {
     color: "var(--hr-accent)",
   },
   admin: {
-    emoji: "🛡️",
+    emoji: "",
     headline: "Full System Control",
     tagline: "Monitor, configure, and audit everything.",
     stats: [
