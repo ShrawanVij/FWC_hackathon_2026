@@ -4,20 +4,20 @@ import styles from "./BulkScreening.module.css";
 
 // ── 14-Factor framework definition ───────────────────────────────────────────
 const FACTORS = [
-  { key: "skillMatch",             label: "Skill Match",                    max: 15, icon: "🎯" },
-  { key: "relevantExperience",     label: "Relevant Experience",            max: 12, icon: "🕒" },
-  { key: "educationQualification", label: "Education",                      max:  8, icon: "🎓" },
-  { key: "certifications",         label: "Certifications",                 max:  5, icon: "📜" },
-  { key: "industryExperience",     label: "Industry Experience",            max:  7, icon: "🏭" },
-  { key: "projectExperience",      label: "Project Experience",             max:  8, icon: "🔧" },
-  { key: "technicalCompetency",    label: "Technical Competency",           max: 10, icon: "💡" },
-  { key: "domainKnowledge",        label: "Domain Knowledge",               max:  7, icon: "📚" },
-  { key: "roleRelevance",          label: "Role Relevance",                 max:  8, icon: "🎪" },
-  { key: "achievementsImpact",     label: "Achievements & Impact",          max:  5, icon: "🏆" },
-  { key: "careerStability",        label: "Career Stability",               max:  4, icon: "📈" },
-  { key: "communicationQuality",   label: "Communication & Resume",         max:  4, icon: "✍️"  },
-  { key: "leadershipExperience",   label: "Leadership",                     max:  4, icon: "👑" },
-  { key: "learningAgility",        label: "Learning Agility",               max:  3, icon: "⚡" },
+  { key: "skillMatch",             label: "Skill Match",                    max: 15 },
+  { key: "relevantExperience",     label: "Relevant Experience",            max: 12 },
+  { key: "educationQualification", label: "Education",                      max:  8 },
+  { key: "certifications",         label: "Certifications",                 max:  5 },
+  { key: "industryExperience",     label: "Industry Experience",            max:  7 },
+  { key: "projectExperience",      label: "Project Experience",             max:  8 },
+  { key: "technicalCompetency",    label: "Technical Competency",           max: 10 },
+  { key: "domainKnowledge",        label: "Domain Knowledge",               max:  7 },
+  { key: "roleRelevance",          label: "Role Relevance",                 max:  8 },
+  { key: "achievementsImpact",     label: "Achievements & Impact",          max:  5 },
+  { key: "careerStability",        label: "Career Stability",               max:  4 },
+  { key: "communicationQuality",   label: "Communication & Resume",         max:  4, icon: ""  },
+  { key: "leadershipExperience",   label: "Leadership",                     max:  4 },
+  { key: "learningAgility",        label: "Learning Agility",               max:  3 },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -91,10 +91,10 @@ function FactorPanel({ candidate, checkedFactors, onToggleCheck }) {
             marginBottom: 16
           }}>
             <div style={{ fontSize: 13, fontWeight: 700, color: "#7dd3fc", letterSpacing: "0.08em" }}>
-              📊 14-FACTOR BREAKDOWN — {candidate.name || "Unknown"}
+              14-FACTOR BREAKDOWN — {candidate.name || "Unknown"}
             </div>
             <div style={{ fontSize: 11, color: "#475569" }}>
-              ☑ = mark factor as passed for this candidate
+              Mark factor as passed for this candidate
             </div>
           </div>
 
@@ -157,7 +157,7 @@ function FactorPanel({ candidate, checkedFactors, onToggleCheck }) {
             display: "flex", gap: 16, alignItems: "center",
           }}>
             <div style={{ fontSize: 12, color: "#64748b" }}>
-              ✅ <strong style={{ color: "#22c55e" }}>
+              <strong style={{ color: "#22c55e" }}>
                 {Object.values(checkedFactors[candidate._id] || {}).filter(Boolean).length}
               </strong> / 14 factors approved
             </div>
@@ -197,7 +197,7 @@ function FactorFilterPanel({ filters, onFilterChange, onReset, matchCount, total
         marginBottom: 14,
       }}>
         <div style={{ fontSize: 12, fontWeight: 700, color: "#7dd3fc", letterSpacing: "0.08em" }}>
-          🎛 FACTOR FILTERS
+          FACTOR FILTERS
         </div>
         {hasAnyFilter && (
           <button onClick={onReset} style={{
@@ -231,7 +231,7 @@ function FactorFilterPanel({ filters, onFilterChange, onReset, matchCount, total
             }}>
               <span>{f.icon} {f.label}</span>
               <span style={{ color: val > 0 ? "#22c55e" : "#475569" }}>
-                {val > 0 ? `≥ ${val}/${f.max}` : "any"}
+                {val > 0 ? `>= ${val}/${f.max}` : "any"}
               </span>
             </div>
             <input
@@ -289,7 +289,7 @@ function ScreeningHistory({ onOpen, onNewSession }) {
       <div className={styles.pageHeader}>
         <div>
           <div className={styles.pageTitle}>
-            🧬 <span>Workforce Intelligence</span> — Screening History
+            <span>Workforce Intelligence</span> — Screening History
           </div>
           <div className={styles.pageSub}>
             All past AI screening sessions. Click a session to view ranked talent.
@@ -463,9 +463,9 @@ function UploadSession({ onSuccess, onBack }) {
         <div className={styles.intelIcon}></div>
         <div className={styles.intelText}>
           <strong>14-Factor Workforce Intelligence Engine</strong><br />
-          Skill Match · Experience · Education · Certifications · Industry · Projects ·
-          Technical Competency · Domain Knowledge · Role Relevance · Achievements ·
-          Career Stability · Communication · Leadership · Learning Agility
+          Skill Match, Experience, Education, Certifications, Industry, Projects ·
+          Technical Competency, Domain Knowledge, Role Relevance, Achievements ·
+          Career Stability, Communication, Leadership, Learning Agility
         </div>
       </div>
 
@@ -520,7 +520,7 @@ function UploadSession({ onSuccess, onBack }) {
             ) : (
               <div className={styles.dropText}>
                 Drag & drop your <strong>.zip</strong> file here, or <strong>click to browse</strong><br />
-                <span style={{ fontSize: 12, marginTop: 6, display: "block" }}>Max 50 MB · PDF resumes inside ZIP</span>
+                <span style={{ fontSize: 12, marginTop: 6, display: "block" }}>Max 50 MB, PDF resumes inside ZIP</span>
               </div>
             )}
           </div>
@@ -885,7 +885,7 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
             onClick={() => setShowFilterPanel((p) => !p)}
             style={{ display: "flex", alignItems: "center", gap: 6 }}
           >
-            🎛 Factor Filters {hasAnyFactorFilter ? "●" : ""}
+            Factor Filters {hasAnyFactorFilter ? "*" : ""}
           </button>
         </div>
       </div>
