@@ -59,6 +59,41 @@ export const hrAPI = {
   },
 };
 
+export const bulkScreeningAPI = {
+  createSession: (formData) => {
+    const token = localStorage.getItem("talentos_token");
+    if (!token) throw new Error("Not authenticated");
+    return fetch(`${BASE_URL}/hr/bulk-screening/sessions`, {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+      body: formData,
+    }).then(async (res) => {
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Upload failed");
+      return data;
+    });
+  },
+  getSessions:           ()          => request("/hr/bulk-screening/sessions"),
+  getSession:            (id)        => request(`/hr/bulk-screening/sessions/${id}`),
+  getCandidates:         (id)        => request(`/hr/bulk-screening/sessions/${id}/candidates`),
+  updateCandidateStatus: (id, status) => request(`/hr/bulk-screening/candidates/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
+  exportSession: (id) => {
+    const token = localStorage.getItem("talentos_token");
+    return fetch(`${BASE_URL}/hr/bulk-screening/sessions/${id}/export`, {
+      headers: { Authorization: `Bearer ${token}` },
+    }).then(async (res) => {
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url  = URL.createObjectURL(blob);
+      const a    = document.createElement("a");
+      a.href     = url;
+      a.download = `Screening_${id}.xlsx`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  },
+};
+
 export const interviewAPI = {
   schedule:          (p)          => request("/interviews",                    { method: "POST",  body: JSON.stringify(p) }),
   getHR:             ()           => request("/interviews/hr"),
