@@ -60,6 +60,11 @@ const userSchema = new mongoose.Schema(
       trim: true,
       default: null,
     },
+    phone: {
+      type: String,
+      trim: true,
+      default: null,
+    },
     resumeUrl: {
       type: String,
       default: null,
@@ -84,6 +89,10 @@ const userSchema = new mongoose.Schema(
     onboardingGeneratedAt: {
       type: Date,
       default: null,
+    },
+    onboardingDocs: {
+      type: [{ name: String, url: String, submittedAt: { type: Date, default: Date.now } }],
+      default: [],
     },
     roleReadinessScore: {
       type: Number,
@@ -156,12 +165,14 @@ userSchema.virtual("profile").get(function () {
     createdAt: this.createdAt,
     ...(this.role === "candidate" && {
       fullName: this.fullName,
+      phone: this.phone,
       skills: this.skills,
       resumeUrl: this.resumeUrl,
       resumeText: this.resumeText,
       onboardingPlan: this.onboardingPlan,
       onboardingJobId: this.onboardingJobId,
       onboardingGeneratedAt: this.onboardingGeneratedAt,
+      onboardingDocs: this.onboardingDocs,
       roleReadinessScore: this.roleReadinessScore,
     }),
     ...(this.role === "hr" && {

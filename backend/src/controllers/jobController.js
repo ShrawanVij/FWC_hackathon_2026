@@ -17,7 +17,7 @@ export const getAllJobs = async (req, res) => {
 export const getMyJobs = async (req, res) => {
   try {
     const jobs = await Job.find({ postedBy: req.user._id })
-      .populate("applicants.candidate", "fullName email skills resumeUrl")
+      .populate("applicants.candidate", "fullName email phone skills resumeUrl resumeText roleReadinessScore")
       .sort({ createdAt: -1 });
     res.json({ success: true, jobs });
   } catch (err) {

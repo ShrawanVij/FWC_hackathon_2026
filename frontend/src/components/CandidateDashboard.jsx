@@ -438,15 +438,36 @@ function InterviewTab({ interviews, onRefresh }) {
 
 // ── Onboarding Tab ─────────────────────────────────────────────────────────────
 function OnboardingTab() {
-  const [data, setData]       = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData]         = useState(null);
+  const [loading, setLoading]   = useState(true);
+  const [docs, setDocs]         = useState([]);
+  const [docName, setDocName]   = useState("");
+  const [docUrl, setDocUrl]     = useState("");
+  const [docSaving, setDocSaving] = useState(false);
 
-  useEffect(() => {
-    candidateAPI.getOnboarding()
-      .then((d) => setData(d))
-      .catch(() => setData({ plan: null }))
-      .finally(() => setLoading(false));
-  }, []);
+  const refresh = () => candidateAPI.getOnboarding()
+    .then((d) => { setData(d); setDocs(d.docs || []); })
+    .catch(() => setData({ plan: null }))
+    .finally(() => setLoading(false));
+
+  useEffect(() => { refresh(); }, []);
+
+  const submitDoc = async () => {
+    if (!docName.trim() || !docUrl.trim()) { alert("Both name and URL are required"); return; }
+    setDocSaving(true);
+    try {
+      const d = await candidateAPI.submitDoc({ name: docName.trim(), url: docUrl.trim() });
+      setDocs(d.docs);
+      setDocName(""); setDocUrl("");
+    } catch (e) { alert(e.message); }
+    finally { setDocSaving(false); }
+  };
+
+  const removeDoc = async (docId) => {
+    if (!confirm("Remove this document?")) return;
+    try { const d = await candidateAPI.deleteDoc(docId); setDocs(d.docs); }
+    catch (e) { alert(e.message); }
+  };
 
   if (loading) return <div className={styles.section}><div className={styles.loading}>Loading your onboarding plan...</div></div>;
 
@@ -561,13 +582,57 @@ function OnboardingTab() {
 
       {/* ── Team Integration Tips ── */}
       {plan.teamIntegrationTips?.length > 0 && (
-        <div className={styles.card}>
+        <div className={styles.card} style={{ marginBottom: 16 }}>
           <div className={styles.cardTitle}>🤝 Team Integration Tips</div>
           {plan.teamIntegrationTips.map((tip, i) => (
             <div key={i} className={styles.itemSub} style={{ padding: "6px 0", borderBottom: "1px solid #1e1e1e" }}>💡 {tip}</div>
           ))}
         </div>
       )}
+
+      {/* ── Document Submission ── */}
+      <div className={styles.card}>
+        <div className={styles.cardTitle}>📎 Submit Onboarding Documents</div>
+        <p className={styles.itemSub} style={{ marginBottom: 14 }}>
+          Upload links to your documents (Google Drive, Dropbox, etc.). HR will be able to view them.
+        </p>
+
+        <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
+          <input
+            className={styles.input}
+            style={{ flex: 1, minWidth: 140 }}
+            placeholder="Document name (e.g. ID Proof, Degree)"
+            value={docName}
+            onChange={(e) => setDocName(e.target.value)}
+          />
+          <input
+            className={styles.input}
+            style={{ flex: 2, minWidth: 220 }}
+            placeholder="Link URL (Google Drive, Dropbox...)"
+            value={docUrl}
+            onChange={(e) => setDocUrl(e.target.value)}
+          />
+          <button className={styles.primaryBtn} onClick={submitDoc} disabled={docSaving}>
+            {docSaving ? "Saving..." : "Add"}
+          </button>
+        </div>
+
+        {docs.length === 0
+          ? <p className={styles.empty}>No documents submitted yet.</p>
+          : docs.map((doc) => (
+            <div key={doc._id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: "1px solid #1e1e1e" }}>
+              <div>
+                <div style={{ fontSize: 14, color: "var(--text-primary)", fontWeight: 600 }}>{doc.name}</div>
+                <div className={styles.itemSub}>{new Date(doc.submittedAt).toLocaleDateString()}</div>
+              </div>
+              <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                <a href={doc.url} target="_blank" rel="noreferrer" className={styles.inlineBtn}>View ↗</a>
+                <button className={styles.dangerBtn} style={{ padding: "4px 10px", fontSize: 12 }} onClick={() => removeDoc(doc._id)}>Remove</button>
+              </div>
+            </div>
+          ))
+        }
+      </div>
     </div>
   );
 }
@@ -575,6 +640,7 @@ function OnboardingTab() {
 // ── Profile Tab ────────────────────────────────────────────────────────────────
 function ProfileTab({ user, onUpdate }) {
   const [fullName, setFullName] = useState(user?.fullName || "");
+  const [phone, setPhone]       = useState(user?.phone || "");
   const [skillInput, setSkillInput] = useState(user?.skills?.join(", ") || "");
   const [resumeUrl, setResumeUrl] = useState(user?.resumeUrl || "");
   const [resumeText, setResumeText] = useState(user?.resumeText || "");
@@ -584,7 +650,7 @@ function ProfileTab({ user, onUpdate }) {
   const save = async () => {
     setSaving(true);
     try {
-      const d = await candidateAPI.updateProfile({ fullName, skills: skillInput, resumeUrl, resumeText });
+      const d = await candidateAPI.updateProfile({ fullName, phone, skills: skillInput, resumeUrl, resumeText });
       onUpdate(d.user);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
@@ -599,6 +665,10 @@ function ProfileTab({ user, onUpdate }) {
         <div className={styles.formGroup}>
           <label className={styles.label}>Full Name</label>
           <input className={styles.input} value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your name" />
+        </div>
+        <div className={styles.formGroup}>
+          <label className={styles.label}>Phone Number</label>
+          <input className={styles.input} value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="+91 9876543210" type="tel" />
         </div>
         <div className={styles.formGroup}>
           <label className={styles.label}>Skills (comma separated)</label>

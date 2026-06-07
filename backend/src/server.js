@@ -96,7 +96,7 @@ app.use(
   })
 );
 
-app.use(express.json({ limit: "50kb" }));
+app.use(express.json({ limit: "200kb" }));
 app.use(express.urlencoded({ extended: true }));
 
 app.use(

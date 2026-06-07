@@ -85,6 +85,34 @@
 .rankScoreNum { font-family:'Syne',sans-serif;font-size:32px;font-weight:800;line-height:1; }
 .rankScoreLabel { font-size:12px;color:var(--text-muted); }
 
+/* ── Mobile fixes ────────────────────────────────────────────── */
+@media(max-width:768px) {
+  .rankCard { flex-wrap:wrap; padding:14px; gap:10px; }
+  .rankPosition { font-size:16px; min-width:28px; }
+  .rankInfo { min-width:0; width:100%; }
+  .rankScore { flex-direction:row; align-items:baseline; gap:2px; min-width:auto; }
+  .rankScoreNum { font-size:22px; }
+  .rankDetails { grid-template-columns:1fr; }
+
+  .rankControls { flex-wrap:wrap; }
+  .rankControls .input { min-width:0; }
+
+  .jobRow { flex-direction:column; }
+  .jobRowRight { flex-direction:row; align-items:center; }
+
+  .tableWrap { overflow-x:auto; -webkit-overflow-scrolling:touch; }
+
+  .sectionTitle { font-size:18px; }
+}
+
+@media(max-width:480px) {
+  .card { padding:14px; }
+  .rankCard { padding:12px; }
+  .statsRow { grid-template-columns:1fr 1fr; gap:10px; }
+  .statCard { padding:12px; }
+  .statValue { font-size:16px; }
+}
+
 /* Buttons */
 .primaryBtn { background:var(--hr-accent);color:#fff;border:none;border-radius:8px;padding:11px 22px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Syne',sans-serif;transition:all .2s; }
 .primaryBtn:hover:not(:disabled) { opacity:.85;transform:translateY(-1px); }

@@ -17,7 +17,9 @@ const navItems = {
     { id: "my-jobs",     icon: "💼", label: "My Jobs"         },
     { id: "candidates",  icon: "👥", label: "Candidates"      },
     { id: "interviews",  icon: "📅", label: "Interviews"      },
-    { id: "ai-ranking",  icon: "🤖", label: "AI Ranking"      },
+    { id: "ai-ranking",  icon: "🤖", label: "AI Resume Screening" },
+    { id: "bulk-screen", icon: "📦", label: "Bulk Screening"    },
+    { id: "onboarding",  icon: "🚀", label: "Onboarding"        },
   ],
   admin: [
     { id: "overview",   icon: "⚡", label: "Overview"         },
@@ -39,14 +41,23 @@ const roleBadge = { candidate: "Candidate", hr: "HR", admin: "Admin" };
 export default function DashboardLayout({ activeTab, onTabChange, children }) {
   const { user, handleLogout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
   const role = user?.role || "candidate";
   const accent = roleColors[role];
   const items = navItems[role] || [];
 
+  const handleNavChange = (id) => {
+    onTabChange(id);
+    setMobileOpen(false);
+  };
+
   return (
     <div className={styles.shell} style={{ "--accent": accent }}>
+      {/* Mobile overlay */}
+      {mobileOpen && <div className={styles.overlay} onClick={() => setMobileOpen(false)} />}
+
       {/* Sidebar */}
-      <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""}`}>
+      <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""} ${mobileOpen ? styles.mobileOpen : ""}`}>
         <div className={styles.sideTop}>
           <div className={styles.brand}>
             <span className={styles.brandIcon}>◈</span>
@@ -74,7 +85,7 @@ export default function DashboardLayout({ activeTab, onTabChange, children }) {
             <button
               key={item.id}
               className={`${styles.navItem} ${activeTab === item.id ? styles.active : ""}`}
-              onClick={() => onTabChange(item.id)}
+              onClick={() => handleNavChange(item.id)}
               title={collapsed ? item.label : ""}
             >
               <span className={styles.navIcon}>{item.icon}</span>
@@ -93,9 +104,14 @@ export default function DashboardLayout({ activeTab, onTabChange, children }) {
       {/* Main */}
       <main className={styles.main}>
         <div className={styles.topBar}>
-          <div className={styles.pageTitle}>
-            {items.find((i) => i.id === activeTab)?.icon}{" "}
-            {items.find((i) => i.id === activeTab)?.label}
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <button className={styles.burgerBtn} onClick={() => setMobileOpen((o) => !o)}>
+              <span /><span /><span />
+            </button>
+            <div className={styles.pageTitle}>
+              {items.find((i) => i.id === activeTab)?.icon}{" "}
+              {items.find((i) => i.id === activeTab)?.label}
+            </div>
           </div>
           <div className={styles.topRight}>
             <span className={styles.rolePill} style={{ background: `${accent}22`, color: accent, border: `1px solid ${accent}44` }}>

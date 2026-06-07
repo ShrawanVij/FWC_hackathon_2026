@@ -1,18 +1,24 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import Groq from "groq-sdk";
 import Job from "../models/Job.js";
 import User from "../models/User.js";
 import Interview from "../models/Interview.js";
 
-const getGemini = () => {
-  const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-  return genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+const generateContent = async (prompt) => {
+  const response = await groq.chat.completions.create({
+    model: "llama-3.3-70b-versatile",
+    messages: [{ role: "user", content: prompt }],
+    temperature: 0.7,
+  });
+  return response.choices[0].message.content;
 };
 
 // POST /api/ai/rank-candidates/:jobId — HR: rank all applicants for a job
 export const rankCandidates = async (req, res) => {
   try {
     const job = await Job.findById(req.params.jobId)
-      .populate("applicants.candidate", "fullName email skills resumeUrl resumeText");
+      .populate("applicants.candidate", "fullName email phone skills resumeUrl resumeText");
 
     if (!job) return res.status(404).json({ success: false, message: "Job not found" });
     if (job.postedBy.toString() !== req.user._id.toString())
@@ -20,21 +26,25 @@ export const rankCandidates = async (req, res) => {
     if (job.applicants.length === 0)
       return res.status(400).json({ success: false, message: "No applicants yet" });
 
-    const model = getGemini();
+    const { topN } = req.body;
+    const limit = topN && Number.isInteger(topN) && topN > 0 ? topN : null;
 
     const candidateList = job.applicants
       .filter((a) => a.candidate)
+      .slice(0, limit || undefined)
       .map((a, i) => ({
         index: i,
         name: a.candidate.fullName || a.candidate.email,
         email: a.candidate.email,
+        phone: a.candidate.phone || null,
         skills: a.candidate.skills?.join(", ") || "Not specified",
         resumeText: a.candidate.resumeText || null,
+        resumeUrl: a.candidate.resumeUrl || null,
         id: a.candidate._id.toString(),
       }));
 
     const prompt = `
-You are a senior technical recruiter AI. Analyze these candidates for the job below and rank them.
+You are a senior technical recruiter AI. Analyze these candidates for the job below and score them on 14 factors.
 
 JOB TITLE: ${job.title}
 JOB DESCRIPTION: ${job.description}
@@ -46,15 +56,49 @@ ${candidateList.map((c) => `${c.index + 1}. Name: ${c.name}
    Skills: ${c.skills}
    Resume: ${c.resumeText ? c.resumeText.slice(0, 3000) : "Not provided — evaluate on skills only"}`).join("\n\n")}
 
-Return ONLY a valid JSON array (no markdown, no explanation) in this exact format:
+Score each candidate on ALL 14 factors (0-100 each). The overall score is the weighted average.
+
+FACTORS:
+1. skillMatch — how well their skills match the job requirements
+2. relevantExperience — years and relevance of work experience
+3. educationQualification — degree level and field relevance
+4. certifications — relevant certifications and credentials
+5. industryExperience — experience in the same or related industry
+6. projectExperience — relevant projects in their portfolio/resume
+7. technicalCompetency — depth of technical knowledge
+8. domainKnowledge — understanding of the job domain
+9. roleRelevance — how closely past roles match this position
+10. achievementsImpact — measurable achievements and impact
+11. careerStability — job tenure and career progression consistency
+12. communicationResumeQuality — clarity and quality of resume/communication
+13. leadershipExperience — leadership or team management experience
+14. learningAgility — evidence of picking up new skills quickly
+
+Return ONLY a valid JSON array (no markdown, no explanation):
 [
   {
     "id": "<candidate_id>",
     "name": "<name>",
-    "score": <0-100>,
-    "summary": "<2 sentence assessment>",
+    "score": <0-100 weighted overall>,
+    "summary": "<2 sentence overall assessment>",
     "strengths": ["strength1", "strength2"],
-    "gaps": ["gap1", "gap2"]
+    "gaps": ["gap1", "gap2"],
+    "factors": {
+      "skillMatch": <0-100>,
+      "relevantExperience": <0-100>,
+      "educationQualification": <0-100>,
+      "certifications": <0-100>,
+      "industryExperience": <0-100>,
+      "projectExperience": <0-100>,
+      "technicalCompetency": <0-100>,
+      "domainKnowledge": <0-100>,
+      "roleRelevance": <0-100>,
+      "achievementsImpact": <0-100>,
+      "careerStability": <0-100>,
+      "communicationResumeQuality": <0-100>,
+      "leadershipExperience": <0-100>,
+      "learningAgility": <0-100>
+    }
   }
 ]
 
@@ -62,12 +106,17 @@ Use the index order to map back to ids: ${candidateList.map((c) => `index ${c.in
 Sort by score descending.
 `;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().replace(/```json|```/g, "").trim();
+    const text = (await generateContent(prompt)).replace(/```json|```/g, "").trim();
     const rankings = JSON.parse(text);
 
+    // Merge candidate contact details into rankings
+    const enriched = rankings.map((rank) => {
+      const meta = candidateList.find((c) => c.id === rank.id);
+      return { ...rank, email: meta?.email || "", phone: meta?.phone || "", skills: meta?.skills || "", resumeUrl: meta?.resumeUrl || "" };
+    });
+
     // Save AI scores back to job applicants
-    for (const rank of rankings) {
+    for (const rank of enriched) {
       const applicant = job.applicants.find(
         (a) => a.candidate._id.toString() === rank.id
       );
@@ -79,7 +128,7 @@ Sort by score descending.
     }
     await job.save();
 
-    res.json({ success: true, rankings });
+    res.json({ success: true, rankings: enriched });
   } catch (err) {
     console.error("Gemini rank error:", err);
     res.status(500).json({ success: false, message: "AI ranking failed: " + err.message });
@@ -92,7 +141,6 @@ export const startMockInterview = async (req, res) => {
     const { jobTitle, skills, jobDescription } = req.body;
     if (!jobTitle) return res.status(400).json({ success: false, message: "jobTitle is required" });
 
-    const model = getGemini();
     const prompt = `
 You are a technical interviewer. Generate 5 interview questions for this role.
 
@@ -106,8 +154,7 @@ Return ONLY a valid JSON array of 5 strings (no markdown, no numbering):
 Mix: 2 technical, 1 problem-solving, 1 behavioral, 1 situational.
 `;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().replace(/```json|```/g, "").trim();
+    const text = (await generateContent(prompt)).replace(/```json|```/g, "").trim();
     const questions = JSON.parse(text);
 
     res.json({ success: true, questions });
@@ -124,7 +171,6 @@ export const evaluateMockInterview = async (req, res) => {
     if (!questions?.length || !answers?.length)
       return res.status(400).json({ success: false, message: "Questions and answers required" });
 
-    const model = getGemini();
     const qa = questions.map((q, i) => `Q${i + 1}: ${q}\nA${i + 1}: ${answers[i] || "No answer"}`).join("\n\n");
 
     const prompt = `
@@ -149,8 +195,7 @@ Return ONLY a valid JSON object (no markdown):
 }
 `;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().replace(/```json|```/g, "").trim();
+    const text = (await generateContent(prompt)).replace(/```json|```/g, "").trim();
     const evaluation = JSON.parse(text);
 
     res.json({ success: true, evaluation });
@@ -164,7 +209,6 @@ Return ONLY a valid JSON object (no markdown):
 export const reviewProfile = async (req, res) => {
   try {
     const user = await User.findById(req.user._id);
-    const model = getGemini();
 
     const prompt = `
 Review this candidate's profile and give actionable advice.
@@ -183,8 +227,7 @@ Return ONLY valid JSON (no markdown):
 }
 `;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().replace(/```json|```/g, "").trim();
+    const text = (await generateContent(prompt)).replace(/```json|```/g, "").trim();
     const review = JSON.parse(text);
 
     res.json({ success: true, review });
@@ -207,7 +250,6 @@ export const generateInterviewQuestions = async (req, res) => {
     if (interview.mockQuestions.length > 0)
       return res.json({ success: true, questions: interview.mockQuestions });
 
-    const model = getGemini();
     const prompt = `
 You are a technical interviewer. Generate 5 interview questions for this role.
 
@@ -221,8 +263,7 @@ Return ONLY a valid JSON array of 5 strings (no markdown, no numbering):
 Mix: 2 technical, 1 problem-solving, 1 behavioral, 1 situational.
 `;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().replace(/```json|```/g, "").trim();
+    const text = (await generateContent(prompt)).replace(/```json|```/g, "").trim();
     const questions = JSON.parse(text);
 
     interview.mockQuestions = questions;
@@ -245,7 +286,6 @@ export const evaluateInterview = async (req, res) => {
     if (interview.scheduledBy.toString() !== req.user._id.toString())
       return res.status(403).json({ success: false, message: "Not your interview" });
 
-    const model = getGemini();
     const { candidate, job } = interview;
 
     const hasAnswers = interview.mockAnswers.length > 0;
@@ -282,8 +322,7 @@ Return ONLY valid JSON (no markdown):
 }
 `;
 
-    const result = await model.generateContent(prompt);
-    const text = result.response.text().replace(/```json|```/g, "").trim();
+    const text = (await generateContent(prompt)).replace(/```json|```/g, "").trim();
     const evaluation = JSON.parse(text);
 
     interview.mockScore          = evaluation.overallScore;
@@ -352,8 +391,7 @@ Return ONLY valid JSON (no markdown):
 }
 `;
 
-        const onboardingResult = await model.generateContent(onboardingPrompt);
-        const onboardingText   = onboardingResult.response.text().replace(/```json|```/g, "").trim();
+        const onboardingText = (await generateContent(onboardingPrompt)).replace(/```json|```/g, "").trim();
         const plan             = JSON.parse(onboardingText);
 
         // Attach explainability metadata — built from known signals, not from Gemini
