@@ -9,7 +9,7 @@ import styles from "./CandidateDashboard.module.css";
 function StatCard({ icon, label, value, color }) {
   return (
     <div className={styles.statCard} style={{ "--c": color }}>
-      <span className={styles.statIcon}>{icon}</span>
+      
       <div>
         <div className={styles.statValue}>{value}</div>
         <div className={styles.statLabel}>{label}</div>
@@ -32,14 +32,14 @@ function Overview({ user, appliedJobs, interviews, onTabChange }) {
 
   return (
     <div className={styles.section}>
-      <h2 className={styles.sectionTitle}>Welcome back, {user?.fullName || "Candidate"} 👋</h2>
+      <h2 className={styles.sectionTitle}>Welcome back, {user?.fullName || "Candidate"}</h2>
       <div className={styles.statsRow}>
-        <StatCard icon="💼" label="Jobs Applied"     value={appliedJobs.length}  color="var(--cand-accent)" />
-        <StatCard icon="📅" label="Interviews"       value={interviews.length}   color="#a78bfa" />
-        <StatCard icon="⭐" label="Profile Skills"   value={user?.skills?.length || 0} color="#f59e0b" />
-        <StatCard icon="📄" label="Resume"           value={user?.resumeUrl ? "Uploaded" : "Missing"} color={user?.resumeUrl ? "#22c55e" : "#ef4444"} />
+        <StatCard icon="▪" label="Jobs Applied"     value={appliedJobs.length}  color="var(--cand-accent)" />
+        <StatCard icon="▪" label="Interviews"       value={interviews.length}   color="#a78bfa" />
+        <StatCard icon="▪" label="Profile Skills"   value={user?.skills?.length || 0} color="#f59e0b" />
+        <StatCard icon="▪" label="Resume"           value={user?.resumeUrl ? "Uploaded" : "Missing"} color={user?.resumeUrl ? "#22c55e" : "#ef4444"} />
         {user?.roleReadinessScore != null && (
-          <StatCard icon="🎯" label="Role Readiness" value={`${user.roleReadinessScore}/100`} color="#22c55e" />
+          <StatCard icon="▪" label="Role Readiness" value={`${user.roleReadinessScore}/100`} color="#22c55e" />
         )}
       </div>
 
@@ -70,14 +70,14 @@ function Overview({ user, appliedJobs, interviews, onTabChange }) {
               </div>
               <p className={styles.aiSummary}>{profileReview.summary}</p>
               <div className={styles.tips}>
-                {profileReview.tips?.map((t, i) => <div key={i} className={styles.tip}>💡 {t}</div>)}
+                {profileReview.tips?.map((t, i) => <div key={i} className={styles.tip}>{t}</div>)}
               </div>
             </div>
           ) : (
             <div className={styles.aiPrompt}>
               <p>Get AI-powered feedback on your profile to stand out to recruiters.</p>
               <button className={styles.aiBtn} onClick={runReview} disabled={reviewLoading}>
-                {reviewLoading ? "Analyzing..." : "✨ Analyze My Profile"}
+                {reviewLoading ? "Analyzing..." : "Analyze My Profile"}
               </button>
             </div>
           )}
@@ -112,7 +112,7 @@ function BrowseJobs({ appliedJobIds }) {
   return (
     <div className={styles.section}>
       <div className={styles.searchBar}>
-        <span>🔍</span>
+        <span></span>
         <input placeholder="Search jobs or companies..." value={search} onChange={(e) => setSearch(e.target.value)} className={styles.searchInput} />
       </div>
       {loading ? <div className={styles.loading}>Loading jobs...</div> : (
@@ -133,7 +133,7 @@ function BrowseJobs({ appliedJobIds }) {
                   {job.skills?.slice(0, 4).map((s) => <span key={s} className={styles.skillTag}>{s}</span>)}
                 </div>
                 <div className={styles.jobFooter}>
-                  {job.salaryRange && <span className={styles.salary}>💰 {job.salaryRange}</span>}
+                  {job.salaryRange && <span className={styles.salary}>{job.salaryRange}</span>}
                   <button
                     className={`${styles.applyBtn} ${applied ? styles.appliedBtn : ""}`}
                     onClick={() => !applied && apply(job._id)}
@@ -224,7 +224,7 @@ function MockInterview() {
     <div className={styles.section}>
       {step === "setup" && (
         <div className={styles.card} style={{ maxWidth: 560 }}>
-          <h2 className={styles.cardTitle}>🎤 AI Mock Interview</h2>
+          <h2 className={styles.cardTitle}>AI Mock Interview</h2>
           <p className={styles.cardSub}>Gemini will generate role-specific questions and evaluate your answers.</p>
           <div className={styles.formGroup}>
             <label className={styles.label}>Job Title *</label>
@@ -276,11 +276,11 @@ function MockInterview() {
           </div>
           <div className={styles.twoCol}>
             <div className={styles.card}>
-              <h3 className={styles.cardTitle}>✅ Strengths</h3>
+              <h3 className={styles.cardTitle}>Strengths</h3>
               {evaluation.strengths?.map((s, i) => <div key={i} className={styles.strengthItem}>• {s}</div>)}
             </div>
             <div className={styles.card}>
-              <h3 className={styles.cardTitle}>📈 Areas to Improve</h3>
+              <h3 className={styles.cardTitle}>Areas to Improve</h3>
               {evaluation.improvements?.map((s, i) => <div key={i} className={styles.improvItem}>• {s}</div>)}
             </div>
           </div>
@@ -388,7 +388,7 @@ function InterviewTab({ interviews, onRefresh }) {
                 onClick={() => generateQuestions(iv._id)}
                 disabled={generatingFor === iv._id}
               >
-                {generatingFor === iv._id ? "Generating..." : "✨ Generate Interview Questions"}
+                {generatingFor === iv._id ? "Generating..." : "Generate Interview Questions"}
               </button>
             ) : iv.mockAnswers.length === 0 ? (
               <div style={{ marginTop: 12 }}>
@@ -429,7 +429,7 @@ function InterviewTab({ interviews, onRefresh }) {
       )}
 
       <div style={{ margin: "32px 0 16px", borderTop: "1px solid #2d2d2d", paddingTop: 24 }}>
-        <h2 className={styles.sectionTitle}>🎤 Mock Interview Practice</h2>
+        <h2 className={styles.sectionTitle}>Mock Interview Practice</h2>
       </div>
       <MockInterview />
     </div>
@@ -474,7 +474,7 @@ function OnboardingTab() {
   if (!data?.plan) return (
     <div className={styles.section}>
       <div className={styles.card} style={{ textAlign: "center", padding: "48px 24px" }}>
-        <div style={{ fontSize: 52, marginBottom: 16 }}>🚀</div>
+        <div style={{ fontSize: 52, marginBottom: 16 }}></div>
         <h2 className={styles.cardTitle}>Your Onboarding Plan</h2>
         <p className={styles.empty}>Your personalized onboarding plan will appear here once you've been selected for a position. Complete your profile and ace your interview to unlock it.</p>
       </div>
@@ -492,7 +492,7 @@ function OnboardingTab() {
       <div className={styles.card} style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 16 }}>
           <div style={{ flex: 1 }}>
-            <h2 className={styles.sectionTitle} style={{ marginBottom: 4 }}>🚀 {jobTitle || "Your Role"}</h2>
+            <h2 className={styles.sectionTitle} style={{ marginBottom: 4 }}>{jobTitle || "Your Role"}</h2>
             <p className={styles.itemSub}>
               {jobCompany}{generatedAt ? ` · Generated ${new Date(generatedAt).toLocaleDateString()}` : ""}
             </p>
@@ -527,10 +527,10 @@ function OnboardingTab() {
       {/* ── Day 1 Checklist ── */}
       {plan.day1Checklist?.length > 0 && (
         <div className={styles.card} style={{ marginBottom: 16 }}>
-          <div className={styles.cardTitle}>📋 Day 1 Checklist</div>
+          <div className={styles.cardTitle}>Day 1 Checklist</div>
           {plan.day1Checklist.map((item, i) => (
             <div key={i} style={{ display: "flex", gap: 10, padding: "7px 0", borderBottom: "1px solid #1e1e1e", fontSize: 14, color: "var(--text-primary)" }}>
-              <span style={{ color: "var(--cand-accent)", flexShrink: 0 }}>☐</span>
+              <span style={{ color: "var(--cand-accent)", flexShrink: 0 }}>–</span>
               <span>{item}</span>
             </div>
           ))}
@@ -539,7 +539,7 @@ function OnboardingTab() {
 
       {/* ── 30 / 60 / 90 Day Goals ── */}
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 16 }}>
-        {[["🎯 30 Days", plan.day30Goals], ["🎯 60 Days", plan.day60Goals], ["🎯 90 Days", plan.day90Goals]].map(([label, goals]) =>
+        {[["30 Days", plan.day30Goals], ["60 Days", plan.day60Goals], ["90 Days", plan.day90Goals]].map(([label, goals]) =>
           goals?.length > 0 && (
             <div key={label} className={styles.card}>
               <div className={styles.cardTitle}>{label}</div>
@@ -552,7 +552,7 @@ function OnboardingTab() {
       {/* ── Skills Roadmap ── */}
       {plan.skillsToLearn?.length > 0 && (
         <div className={styles.card} style={{ marginBottom: 16 }}>
-          <div className={styles.cardTitle}>📚 Skills Roadmap</div>
+          <div className={styles.cardTitle}>Skills Roadmap</div>
           {plan.skillsToLearn.map((s, i) => (
             <div key={i} className={styles.listItem} style={{ padding: "8px 0", borderBottom: "1px solid #1e1e1e" }}>
               <div>
@@ -571,11 +571,11 @@ function OnboardingTab() {
       {/* ── Strengths + Growth ── */}
       <div className={styles.twoCol} style={{ marginBottom: 16 }}>
         <div className={styles.card}>
-          <div className={styles.cardTitle}>✅ Strengths</div>
+          <div className={styles.cardTitle}>Strengths</div>
           {plan.strengths?.map((s, i) => <div key={i} className={styles.itemSub} style={{ padding: "4px 0" }}>• {s}</div>)}
         </div>
         <div className={styles.card}>
-          <div className={styles.cardTitle}>📈 Areas to Grow</div>
+          <div className={styles.cardTitle}>Areas to Grow</div>
           {plan.areasToGrow?.map((a, i) => <div key={i} className={styles.itemSub} style={{ padding: "4px 0" }}>• {a}</div>)}
         </div>
       </div>
@@ -583,16 +583,16 @@ function OnboardingTab() {
       {/* ── Team Integration Tips ── */}
       {plan.teamIntegrationTips?.length > 0 && (
         <div className={styles.card} style={{ marginBottom: 16 }}>
-          <div className={styles.cardTitle}>🤝 Team Integration Tips</div>
+          <div className={styles.cardTitle}>Team Integration Tips</div>
           {plan.teamIntegrationTips.map((tip, i) => (
-            <div key={i} className={styles.itemSub} style={{ padding: "6px 0", borderBottom: "1px solid #1e1e1e" }}>💡 {tip}</div>
+            <div key={i} className={styles.itemSub} style={{ padding: "6px 0", borderBottom: "1px solid #1e1e1e" }}>{tip}</div>
           ))}
         </div>
       )}
 
       {/* ── Document Submission ── */}
       <div className={styles.card}>
-        <div className={styles.cardTitle}>📎 Submit Onboarding Documents</div>
+        <div className={styles.cardTitle}>Submit Onboarding Documents</div>
         <p className={styles.itemSub} style={{ marginBottom: 14 }}>
           Upload links to your documents (Google Drive, Dropbox, etc.). HR will be able to view them.
         </p>
@@ -661,7 +661,7 @@ function ProfileTab({ user, onUpdate }) {
   return (
     <div className={styles.section}>
       <div className={styles.card} style={{ maxWidth: 580 }}>
-        <h2 className={styles.cardTitle}>👤 My Profile</h2>
+        <h2 className={styles.cardTitle}>My Profile</h2>
         <div className={styles.formGroup}>
           <label className={styles.label}>Full Name</label>
           <input className={styles.input} value={fullName} onChange={(e) => setFullName(e.target.value)} placeholder="Your name" />

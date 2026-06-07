@@ -4,29 +4,29 @@ import styles from "./DashboardLayout.module.css";
 
 const navItems = {
   candidate: [
-    { id: "overview",    icon: "⚡", label: "Overview"       },
-    { id: "jobs",        icon: "💼", label: "Browse Jobs"    },
-    { id: "applied",     icon: "📋", label: "Applied Jobs"   },
-    { id: "interview",   icon: "🎤", label: "Mock Interview" },
-    { id: "onboarding",  icon: "🚀", label: "Onboarding"    },
-    { id: "profile",     icon: "👤", label: "My Profile"     },
+    { id: "overview",    icon: "", label: "Overview"       },
+    { id: "jobs",        icon: "", label: "Browse Jobs"    },
+    { id: "applied",     icon: "", label: "Applied Jobs"   },
+    { id: "interview",   icon: "", label: "Mock Interview" },
+    { id: "onboarding",  icon: "", label: "Onboarding"    },
+    { id: "profile",     icon: "", label: "My Profile"     },
   ],
   hr: [
-    { id: "overview",    icon: "⚡", label: "Overview"        },
-    { id: "post-job",    icon: "➕", label: "Post a Job"      },
-    { id: "my-jobs",     icon: "💼", label: "My Jobs"         },
-    { id: "candidates",  icon: "👥", label: "Candidates"      },
-    { id: "interviews",  icon: "📅", label: "Interviews"      },
-    { id: "ai-ranking",  icon: "🤖", label: "AI Resume Screening" },
-    { id: "bulk-screen", icon: "📦", label: "Bulk Screening"    },
-    { id: "onboarding",  icon: "🚀", label: "Onboarding"        },
+    { id: "overview",    icon: "", label: "Overview"        },
+    { id: "post-job",    icon: "", label: "Post a Job"      },
+    { id: "my-jobs",     icon: "", label: "My Jobs"         },
+    { id: "candidates",  icon: "", label: "Candidates"      },
+    { id: "interviews",  icon: "", label: "Interviews"      },
+    { id: "ai-ranking",  icon: "", label: "AI Resume Screening" },
+    { id: "bulk-screen", icon: "", label: "Bulk Screening"    },
+    { id: "onboarding",  icon: "", label: "Onboarding"        },
   ],
   admin: [
-    { id: "overview",   icon: "⚡", label: "Overview"         },
-    { id: "users",      icon: "👥", label: "Manage Users"     },
-    { id: "jobs",       icon: "💼", label: "All Jobs"         },
-    { id: "analytics",  icon: "📊", label: "Analytics"       },
-    { id: "workforce",  icon: "🧠", label: "Workforce Intel"  },
+    { id: "overview",   icon: "", label: "Overview"         },
+    { id: "users",      icon: "", label: "Manage Users"     },
+    { id: "jobs",       icon: "", label: "All Jobs"         },
+    { id: "analytics",  icon: "", label: "Analytics"       },
+    { id: "workforce",  icon: "", label: "Workforce Intel"  },
   ],
 };
 
@@ -96,7 +96,7 @@ export default function DashboardLayout({ activeTab, onTabChange, children }) {
         </nav>
 
         <button className={styles.logoutBtn} onClick={handleLogout}>
-          <span>🚪</span>
+          <span> → </span>
           {!collapsed && <span>Logout</span>}
         </button>
       </aside>
@@ -109,7 +109,6 @@ export default function DashboardLayout({ activeTab, onTabChange, children }) {
               <span /><span /><span />
             </button>
             <div className={styles.pageTitle}>
-              {items.find((i) => i.id === activeTab)?.icon}{" "}
               {items.find((i) => i.id === activeTab)?.label}
             </div>
           </div>

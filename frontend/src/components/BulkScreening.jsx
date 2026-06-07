@@ -83,7 +83,7 @@ function ScreeningHistory({ onOpen, onNewSession }) {
           </div>
         </div>
         <button className={styles.btnPrimary} onClick={onNewSession}>
-          ＋ New Screening
+          New Screening
         </button>
       </div>
 
@@ -109,7 +109,7 @@ function ScreeningHistory({ onOpen, onNewSession }) {
           </table>
         ) : sessions.length === 0 ? (
           <div className={styles.empty}>
-            <div className={styles.emptyIcon}>🧬</div>
+            <div className={styles.emptyIcon}></div>
             <div className={styles.emptyTitle}>No screening sessions yet</div>
             <div className={styles.emptyText}>
               Upload a ZIP of resumes to run your first AI Workforce Intelligence analysis.
@@ -237,7 +237,7 @@ function UploadSession({ onSuccess, onBack }) {
       <div className={styles.pageHeader}>
         <div>
           <div className={styles.pageTitle}>
-            🧬 <span>New Workforce Intelligence</span> Screening
+            <span>New Workforce Intelligence</span> Screening
           </div>
           <div className={styles.pageSub}>
             Upload up to 500 resumes. The AI evaluates every candidate across 14 factors.
@@ -247,7 +247,7 @@ function UploadSession({ onSuccess, onBack }) {
       </div>
 
       <div className={styles.intelBanner}>
-        <div className={styles.intelIcon}>🤖</div>
+        <div className={styles.intelIcon}></div>
         <div className={styles.intelText}>
           <strong>14-Factor Workforce Intelligence Engine</strong><br />
           Skill Match · Experience · Education · Certifications · Industry · Projects ·
@@ -301,7 +301,7 @@ function UploadSession({ onSuccess, onBack }) {
           >
             <input type="file" accept=".zip" ref={fileRef}
               onChange={(e) => setZipFile(e.target.files[0] || null)} />
-            <div className={styles.dropIcon}>📦</div>
+            <div className={styles.dropIcon}></div>
             {zipFile ? (
               <div className={styles.dropFile}>✓ {zipFile.name} ({(zipFile.size / 1024 / 1024).toFixed(1)} MB)</div>
             ) : (
@@ -319,7 +319,7 @@ function UploadSession({ onSuccess, onBack }) {
 
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
           <button type="submit" className={styles.btnPrimary} style={{ padding: "12px 32px", fontSize: 15 }}>
-            🚀 Start AI Screening
+            Start AI Screening
           </button>
         </div>
       </form>
@@ -337,7 +337,7 @@ function TalentGenome({ candidate, onBack }) {
     <div className={styles.root}>
       <div className={styles.pageHeader}>
         <div>
-          <div className={styles.pageTitle}>🧬 Talent <span>Genome</span></div>
+          <div className={styles.pageTitle}>Talent <span>Genome</span></div>
           <div className={styles.pageSub}>14-Factor Workforce Intelligence Report</div>
         </div>
         <button className={styles.btnGhost} onClick={onBack}>← Back to Results</button>
@@ -357,15 +357,15 @@ function TalentGenome({ candidate, onBack }) {
             </div>
 
             <div className={styles.genomeMeta}>
-              {candidate.email && <span>✉ <strong>{candidate.email}</strong></span>}
-              {candidate.phone && <span>📞 <strong>{candidate.phone}</strong></span>}
+              {candidate.email && <span>Email: <strong>{candidate.email}</strong></span>}
+              {candidate.phone && <span>Phone: <strong>{candidate.phone}</strong></span>}
               {candidate.extractedEducation && candidate.extractedEducation !== "unknown" && (
-                <span>🎓 <strong style={{ textTransform: "capitalize" }}>{candidate.extractedEducation}</strong></span>
+                <span>Education: <strong style={{ textTransform: "capitalize" }}>{candidate.extractedEducation}</strong></span>
               )}
               {candidate.extractedExperienceYears && (
-                <span>🕒 <strong>{candidate.extractedExperienceYears} yrs experience</strong></span>
+                <span>Experience: <strong>{candidate.extractedExperienceYears} yrs experience</strong></span>
               )}
-              {candidate.hasLeadership && <span>👑 <strong>Leadership signals detected</strong></span>}
+              {candidate.hasLeadership && <span>Leadership signals detected</span>}
             </div>
           </div>
 
@@ -549,7 +549,7 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
       <div className={styles.pageHeader}>
         <div>
           <div className={styles.pageTitle}>
-            🧬 <span>{session?.jobTitle || "Screening Results"}</span>
+            <span>{session?.jobTitle || "Screening Results"}</span>
           </div>
           <div className={styles.pageSub}>
             AI Workforce Intelligence — {candidates.length} candidates ranked
@@ -557,9 +557,9 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <button className={styles.btnGhost} onClick={onBack}>← History</button>
-          <button className={styles.btnGhost} onClick={onNewSession}>＋ New</button>
+          <button className={styles.btnGhost} onClick={onNewSession}>New</button>
           <button className={styles.btnAccent} onClick={handleExport} disabled={exporting}>
-            {exporting ? "Exporting…" : "⬇ Export Excel"}
+            {exporting ? "Exporting…" : "Export Excel"}
           </button>
         </div>
       </div>
@@ -615,7 +615,7 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
       <div className={styles.card} style={{ padding: 0 }}>
         {visible.length === 0 ? (
           <div className={styles.empty}>
-            <div className={styles.emptyIcon}>👥</div>
+            <div className={styles.emptyIcon}></div>
             <div className={styles.emptyTitle}>No candidates</div>
             <div className={styles.emptyText}>No candidates match this filter.</div>
           </div>
@@ -668,7 +668,7 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
                       <div className={styles.actions}>
                         <button className={`${styles.actionBtn} ${styles.genome}`}
                           onClick={() => onViewGenome(c)}>
-                          🧬 Genome
+                          Genome
                         </button>
                         {c.status !== "shortlisted" && (
                           <button className={`${styles.actionBtn} ${styles.shortlist}`}
