@@ -30,7 +30,6 @@ export const register = async (req, res) => {
 
     if (role === "hr") {
       userData.fullName = fullName || null;
-      userData.companyId = companyId;
       userData.department = department || null;
     }
 
@@ -77,12 +76,6 @@ export const login = async (req, res) => {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
 
-    // HR: verify companyId matches (required)
-    if (role === "hr") {
-      if (!companyId || user.companyId !== companyId.trim()) {
-        return res.status(401).json({ success: false, message: "Invalid credentials" });
-      }
-    }
 
     // Admin: verify admin key (required)
     if (role === "admin") {

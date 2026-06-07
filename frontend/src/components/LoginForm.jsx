@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import InputField from "./InputField";
 import { authAPI } from "../services/api.js";
 import styles from "./LoginForm.module.css";
-import { User, Mail, Tag, Key, LockIcon, AlertTriangle } from "./Icons";
+import { User, Mail, Key, LockIcon, AlertTriangle } from "./Icons";
 
 const roleConfig = {
   candidate: {
@@ -22,9 +22,9 @@ const roleConfig = {
     loginTitle: "HR Portal",
     loginSubtitle: "Manage your talent pipeline",
     registerTitle: "Register HR Account",
-    registerSubtitle: "Set up your company recruiter access",
+    registerSubtitle: "Set up your recruiter access",
     emailLabel: "Work Email",
-    extraField: { label: "Company ID", icon: <Tag size={16} />, key: "companyId", autocomplete: "organization" },
+    extraField: null,
     loginBtn: "Access Portal",
     registerBtn: "Register",
     showRegister: true,
@@ -77,13 +77,12 @@ export default function LoginForm({ role, onSuccess }) {
       let data;
       if (mode === "login") {
         const payload = { email, password, role };
-        if (role === "hr"    && extra) payload.companyId = extra;
-        if (role === "admin" && extra) payload.adminKey  = extra;
+        if (role === "admin" && extra) payload.adminKey = extra;
         data = await authAPI.login(payload);
       } else {
         const payload = { email, password, role };
         if (role === "candidate") payload.fullName = fullName;
-        if (role === "hr")        { payload.fullName = fullName; payload.companyId = extra; }
+        if (role === "hr")        { payload.fullName = fullName; }
         if (role === "admin")     payload.adminKey  = extra;
         data = await authAPI.register(payload);
       }
