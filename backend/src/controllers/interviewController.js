@@ -69,12 +69,15 @@ export const getCandidateInterviews = async (req, res) => {
 export const updateInterviewStatus = async (req, res) => {
   try {
     const { status } = req.body;
-    const interview = await Interview.findByIdAndUpdate(
-      req.params.id,
-      { status },
-      { new: true }
-    ).populate("candidate", "fullName email").populate("job", "title");
+    const interview = await Interview.findById(req.params.id);
     if (!interview) return res.status(404).json({ success: false, message: "Interview not found" });
+    if (interview.scheduledBy.toString() !== req.user._id.toString())
+      return res.status(403).json({ success: false, message: "Not your interview" });
+
+    interview.status = status;
+    await interview.save();
+    await interview.populate("candidate", "fullName email");
+    await interview.populate("job", "title");
     res.json({ success: true, interview });
   } catch (err) {
     res.status(500).json({ success: false, message: err.message });

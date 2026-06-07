@@ -1,19 +1,20 @@
+/* ── Shell ──────────────────────────────────────────────── */
 .shell {
   display: flex;
   min-height: 100vh;
-  background: var(--bg-deep);
+  background: var(--bg-base);
   color: var(--text-primary);
 }
 
-/* ── Sidebar ──────────────────────────────────────────────────── */
+/* ── Sidebar ────────────────────────────────────────────── */
 .sidebar {
-  width: 220px;
+  width: 240px;
   flex-shrink: 0;
-  background: var(--bg-panel);
-  border-right: 1px solid var(--border);
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
   display: flex;
   flex-direction: column;
-  transition: width 0.25s ease;
+  transition: width 0.22s cubic-bezier(0.4,0,0.2,1);
   position: sticky;
   top: 0;
   height: 100vh;
@@ -22,71 +23,88 @@
 
 .sidebar.collapsed { width: 64px; }
 
+/* Brand */
 .sideTop {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 20px 16px 16px;
-  border-bottom: 1px solid var(--border);
+  padding: 18px 16px 16px;
+  border-bottom: 1px solid var(--sidebar-border);
 }
 
 .brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   overflow: hidden;
+  text-decoration: none;
 }
 
-.brandIcon {
-  font-size: 20px;
-  color: var(--accent);
-  flex-shrink: 0;
-}
-
-.brandText {
-  font-family: 'Syne', sans-serif;
-  font-size: 15px;
-  font-weight: 800;
-  white-space: nowrap;
-  letter-spacing: 0.04em;
-}
-
-.collapseBtn {
-  background: none;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text-muted);
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  font-size: 14px;
+.brandMark {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  background: var(--accent, #4f46e5);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  transition: all 0.2s;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  color: #fff;
+  letter-spacing: -0.02em;
 }
 
-.collapseBtn:hover { color: var(--text-primary); border-color: var(--accent); }
+.brandText {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #f8fafc;
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
 
+.collapseBtn {
+  background: none;
+  border: 1px solid var(--sidebar-border);
+  border-radius: var(--radius-sm);
+  color: var(--sidebar-text);
+  width: 26px;
+  height: 26px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  transition: all var(--transition);
+}
+
+.collapseBtn:hover {
+  color: var(--sidebar-text-active);
+  border-color: rgba(255,255,255,0.2);
+  background: var(--sidebar-item-hover);
+}
+
+/* User card */
 .userCard {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 14px 16px;
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--sidebar-border);
 }
 
 .avatar {
-  width: 34px;
-  height: 34px;
+  width: 32px;
+  height: 32px;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Syne', sans-serif;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 13px;
   color: #fff;
   flex-shrink: 0;
 }
@@ -96,31 +114,33 @@
   flex-direction: column;
   gap: 2px;
   overflow: hidden;
+  min-width: 0;
 }
 
 .userName {
   font-size: 13px;
   font-weight: 600;
+  color: var(--sidebar-text-active);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  color: var(--text-primary);
 }
 
 .userRole {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
+  color: var(--accent, #4f46e5);
 }
 
 /* Nav */
 .nav {
   flex: 1;
-  padding: 12px 8px;
+  padding: 10px 8px;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   overflow-y: auto;
 }
 
@@ -129,85 +149,105 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 10px 12px;
+  padding: 9px 12px;
   border: none;
   background: transparent;
-  border-radius: 8px;
-  color: var(--text-muted);
+  border-radius: var(--radius-sm);
+  color: var(--sidebar-text);
   cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
-  font-size: 13.5px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
   font-weight: 500;
   text-align: left;
-  transition: all 0.2s;
+  transition: all var(--transition);
   white-space: nowrap;
   overflow: hidden;
 }
 
-.navItem:hover { background: rgba(255,255,255,0.04); color: var(--text-primary); }
-
-.navItem.active {
-  background: color-mix(in srgb, var(--accent) 12%, transparent);
-  color: var(--accent);
+.navItem:hover {
+  background: var(--sidebar-item-hover);
+  color: var(--sidebar-text-hover);
 }
 
-.navIcon { font-size: 16px; flex-shrink: 0; }
+.navItem.active {
+  background: var(--sidebar-item-active);
+  color: var(--sidebar-text-active);
+}
+
+.navIcon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 18px;
+}
+
 .navLabel { flex: 1; }
 
 .activeBar {
   position: absolute;
-  right: 0;
+  left: 0;
   top: 20%;
   height: 60%;
-  width: 3px;
-  background: var(--accent);
-  border-radius: 3px 0 0 3px;
+  width: 2.5px;
+  background: var(--accent, #4f46e5);
+  border-radius: 0 2px 2px 0;
 }
 
+/* Logout */
 .logoutBtn {
   display: flex;
   align-items: center;
   gap: 10px;
   padding: 14px 20px;
   border: none;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--sidebar-border);
   background: transparent;
-  color: var(--text-muted);
+  color: var(--sidebar-text);
   cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
+  font-family: 'Inter', sans-serif;
   font-size: 13px;
-  transition: all 0.2s;
+  font-weight: 500;
+  transition: all var(--transition);
   white-space: nowrap;
   overflow: hidden;
+  width: 100%;
+  text-align: left;
 }
 
-.logoutBtn:hover { color: #ff6b6b; background: rgba(255,107,107,0.06); }
+.logoutBtn:hover {
+  color: #f87171;
+  background: rgba(248,113,113,0.07);
+}
 
-/* ── Main ─────────────────────────────────────────────────────── */
+/* ── Main area ──────────────────────────────────────────── */
 .main {
   flex: 1;
   display: flex;
   flex-direction: column;
   min-width: 0;
-  overflow: hidden;
+  overflow-x: hidden;
 }
 
 .topBar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 28px;
+  padding: 0 28px;
+  height: 56px;
   border-bottom: 1px solid var(--border);
-  background: var(--bg-card);
+  background: var(--bg-surface);
   position: sticky;
   top: 0;
   z-index: 10;
+  box-shadow: var(--shadow-xs);
 }
 
 .pageTitle {
-  font-family: 'Syne', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -217,11 +257,12 @@
 
 .rolePill {
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  padding: 4px 12px;
-  border-radius: 20px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  border: 1px solid transparent;
 }
 
 .content {
@@ -230,7 +271,7 @@
   overflow-y: auto;
 }
 
-/* ── Burger button (hidden on desktop) ───────────────────────── */
+/* ── Burger ─────────────────────────────────────────────── */
 .burgerBtn {
   display: none;
   flex-direction: column;
@@ -239,33 +280,28 @@
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px;
-  flex-shrink: 0;
+  padding: 6px;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  transition: background var(--transition);
 }
 
-.burgerBtn span {
-  display: block;
-  width: 22px;
-  height: 2px;
-  background: var(--text-primary);
-  border-radius: 2px;
-  transition: all 0.2s;
-}
+.burgerBtn:hover { background: var(--bg-elevated); }
 
-/* ── Overlay ─────────────────────────────────────────────────── */
+/* ── Overlay ─────────────────────────────────────────────── */
 .overlay {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.55);
+  background: rgba(15,23,42,0.4);
   z-index: 99;
+  backdrop-filter: blur(2px);
 }
 
-/* ── Mobile breakpoint ───────────────────────────────────────── */
+/* ── Mobile ─────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .burgerBtn { display: flex; }
   .overlay   { display: block; }
-
   .collapseBtn { display: none; }
 
   .sidebar {
@@ -275,33 +311,23 @@
     height: 100vh;
     z-index: 100;
     transform: translateX(-100%);
-    transition: transform 0.28s ease;
+    transition: transform 0.25s cubic-bezier(0.4,0,0.2,1);
     width: 240px !important;
   }
 
-  .sidebar.mobileOpen {
-    transform: translateX(0);
-  }
+  .sidebar.mobileOpen { transform: translateX(0); }
 
-  /* Always show labels on mobile sidebar */
   .sidebar .brandText,
   .sidebar .userInfo,
   .sidebar .navLabel,
-  .sidebar .logoutBtn span:last-child {
-    display: flex !important;
-  }
+  .sidebar .logoutLabel { display: flex !important; }
 
-  .topBar {
-    padding: 12px 16px;
-  }
-
-  .content {
-    padding: 16px;
-  }
+  .topBar  { padding: 0 16px; }
+  .content { padding: 16px; }
 }
 
 @media (max-width: 480px) {
-  .content { padding: 12px; }
-  .pageTitle { font-size: 14px; }
+  .content   { padding: 12px; }
+  .pageTitle { font-size: 13px; }
   .rolePill  { display: none; }
 }

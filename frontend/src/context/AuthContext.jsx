@@ -30,8 +30,12 @@ export function AuthProvider({ children }) {
     setUser(null);       // ← triggers AppRouter to show LoginPage fresh
   }, []);
 
+  const updateUser = useCallback((updatedUser) => {
+    setUser(updatedUser);
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, loading, handleLoginSuccess, handleLogout }}>
+    <AuthContext.Provider value={{ user, loading, handleLoginSuccess, handleLogout, updateUser }}>
       {children}
     </AuthContext.Provider>
   );

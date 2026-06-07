@@ -1,32 +1,37 @@
 import { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 import styles from "./DashboardLayout.module.css";
+import {
+  LayoutGrid, Briefcase, ClipboardList, Mic, Rocket, User,
+  Plus, Users, Calendar, Sparkles, Upload, BarChart2, Cpu,
+  LogOut, ChevronLeft, ChevronRight, Shield, MenuIcon,
+} from "./Icons";
 
 const navItems = {
   candidate: [
-    { id: "overview",    icon: "", label: "Overview"       },
-    { id: "jobs",        icon: "", label: "Browse Jobs"    },
-    { id: "applied",     icon: "", label: "Applied Jobs"   },
-    { id: "interview",   icon: "", label: "Mock Interview" },
-    { id: "onboarding",  icon: "", label: "Onboarding"    },
-    { id: "profile",     icon: "", label: "My Profile"     },
+    { id: "overview",   icon: <LayoutGrid size={16} />,   label: "Overview"        },
+    { id: "jobs",       icon: <Briefcase size={16} />,    label: "Browse Jobs"     },
+    { id: "applied",    icon: <ClipboardList size={16} />,label: "Applied Jobs"    },
+    { id: "interview",  icon: <Mic size={16} />,          label: "Interviews"      },
+    { id: "onboarding", icon: <Rocket size={16} />,       label: "Onboarding"      },
+    { id: "profile",    icon: <User size={16} />,         label: "My Profile"      },
   ],
   hr: [
-    { id: "overview",    icon: "", label: "Overview"        },
-    { id: "post-job",    icon: "", label: "Post a Job"      },
-    { id: "my-jobs",     icon: "", label: "My Jobs"         },
-    { id: "candidates",  icon: "", label: "Candidates"      },
-    { id: "interviews",  icon: "", label: "Interviews"      },
-    { id: "ai-ranking",  icon: "", label: "AI Resume Screening" },
-    { id: "bulk-screen", icon: "", label: "Bulk Screening"    },
-    { id: "onboarding",  icon: "", label: "Onboarding"        },
+    { id: "overview",    icon: <LayoutGrid size={16} />,   label: "Overview"            },
+    { id: "post-job",    icon: <Plus size={16} />,         label: "Post a Job"          },
+    { id: "my-jobs",     icon: <Briefcase size={16} />,    label: "My Jobs"             },
+    { id: "candidates",  icon: <Users size={16} />,        label: "Candidates"          },
+    { id: "interviews",  icon: <Calendar size={16} />,     label: "Interviews"          },
+    { id: "ai-ranking",  icon: <Sparkles size={16} />,     label: "AI Resume Screening" },
+    { id: "bulk-screen", icon: <Upload size={16} />,       label: "Bulk Screening"      },
+    { id: "onboarding",  icon: <Rocket size={16} />,       label: "Onboarding"          },
   ],
   admin: [
-    { id: "overview",   icon: "", label: "Overview"         },
-    { id: "users",      icon: "", label: "Manage Users"     },
-    { id: "jobs",       icon: "", label: "All Jobs"         },
-    { id: "analytics",  icon: "", label: "Analytics"       },
-    { id: "workforce",  icon: "", label: "Workforce Intel"  },
+    { id: "overview",  icon: <LayoutGrid size={16} />, label: "Overview"        },
+    { id: "users",     icon: <Users size={16} />,      label: "Manage Users"    },
+    { id: "jobs",      icon: <Briefcase size={16} />,  label: "All Jobs"        },
+    { id: "analytics", icon: <BarChart2 size={16} />,  label: "Analytics"       },
+    { id: "workforce", icon: <Cpu size={16} />,        label: "Workforce Intel" },
   ],
 };
 
@@ -42,9 +47,9 @@ export default function DashboardLayout({ activeTab, onTabChange, children }) {
   const { user, handleLogout } = useAuth();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const role = user?.role || "candidate";
+  const role   = user?.role || "candidate";
   const accent = roleColors[role];
-  const items = navItems[role] || [];
+  const items  = navItems[role] || [];
 
   const handleNavChange = (id) => {
     onTabChange(id);
@@ -53,18 +58,17 @@ export default function DashboardLayout({ activeTab, onTabChange, children }) {
 
   return (
     <div className={styles.shell} style={{ "--accent": accent }}>
-      {/* Mobile overlay */}
       {mobileOpen && <div className={styles.overlay} onClick={() => setMobileOpen(false)} />}
 
       {/* Sidebar */}
       <aside className={`${styles.sidebar} ${collapsed ? styles.collapsed : ""} ${mobileOpen ? styles.mobileOpen : ""}`}>
         <div className={styles.sideTop}>
           <div className={styles.brand}>
-            <span className={styles.brandIcon}>◈</span>
+            <div className={styles.brandMark} style={{ background: accent }}>T</div>
             {!collapsed && <span className={styles.brandText}>TalentOS</span>}
           </div>
-          <button className={styles.collapseBtn} onClick={() => setCollapsed((c) => !c)}>
-            {collapsed ? "›" : "‹"}
+          <button className={styles.collapseBtn} onClick={() => setCollapsed(c => !c)} aria-label="Toggle sidebar">
+            {collapsed ? <ChevronRight size={14} /> : <ChevronLeft size={14} />}
           </button>
         </div>
 
@@ -87,6 +91,7 @@ export default function DashboardLayout({ activeTab, onTabChange, children }) {
               className={`${styles.navItem} ${activeTab === item.id ? styles.active : ""}`}
               onClick={() => handleNavChange(item.id)}
               title={collapsed ? item.label : ""}
+              aria-current={activeTab === item.id ? "page" : undefined}
             >
               <span className={styles.navIcon}>{item.icon}</span>
               {!collapsed && <span className={styles.navLabel}>{item.label}</span>}
@@ -96,28 +101,31 @@ export default function DashboardLayout({ activeTab, onTabChange, children }) {
         </nav>
 
         <button className={styles.logoutBtn} onClick={handleLogout}>
-          <span> → </span>
-          {!collapsed && <span>Logout</span>}
+          <LogOut size={16} />
+          {!collapsed && <span className={styles.logoutLabel}>Sign out</span>}
         </button>
       </aside>
 
       {/* Main */}
       <main className={styles.main}>
-        <div className={styles.topBar}>
+        <header className={styles.topBar}>
           <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-            <button className={styles.burgerBtn} onClick={() => setMobileOpen((o) => !o)}>
-              <span /><span /><span />
+            <button className={styles.burgerBtn} onClick={() => setMobileOpen(o => !o)} aria-label="Open menu">
+              <MenuIcon size={20} />
             </button>
             <div className={styles.pageTitle}>
-              {items.find((i) => i.id === activeTab)?.label}
+              {items.find(i => i.id === activeTab)?.label}
             </div>
           </div>
           <div className={styles.topRight}>
-            <span className={styles.rolePill} style={{ background: `${accent}22`, color: accent, border: `1px solid ${accent}44` }}>
+            <span
+              className={styles.rolePill}
+              style={{ background: `${accent}14`, color: accent, borderColor: `${accent}30` }}
+            >
               {roleBadge[role]}
             </span>
           </div>
-        </div>
+        </header>
         <div className={styles.content}>{children}</div>
       </main>
     </div>

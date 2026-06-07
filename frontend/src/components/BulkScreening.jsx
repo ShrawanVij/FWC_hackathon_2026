@@ -511,8 +511,9 @@ function UploadSession({ onSuccess, onBack }) {
             onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
             onDragLeave={() => setDrag(false)}
             onDrop={handleDrop}
+            onClick={() => fileRef.current?.click()}
           >
-            <input type="file" accept=".zip" ref={fileRef}
+            <input type="file" accept=".zip" ref={fileRef} style={{ display: "none" }}
               onChange={(e) => setZipFile(e.target.files[0] || null)} />
             <div className={styles.dropIcon}></div>
             {zipFile ? (
@@ -711,7 +712,7 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
     try {
       const [sessionData, candData] = await Promise.all([
         bulkScreeningAPI.getSession(sessionId),
-        bulkScreeningAPI.getCandidates(sessionId, "?limit=100"),
+        bulkScreeningAPI.getCandidates(sessionId),
       ]);
       setSession(sessionData.session);
       setStats(sessionData.stats);

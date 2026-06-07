@@ -1,5 +1,6 @@
 import { useState } from "react";
 import styles from "./InputField.module.css";
+import { Eye, EyeOff } from "./Icons";
 
 export default function InputField({
   label,
@@ -45,7 +46,7 @@ export default function InputField({
           onClick={() => setShowPwd((s) => !s)}
           aria-label={showPwd ? "Hide password" : "Show password"}
         >
-          {showPwd ? "🙈" : "👁️"}
+          {showPwd ? <EyeOff size={15} /> : <Eye size={15} />}
         </button>
       )}
     </div>
