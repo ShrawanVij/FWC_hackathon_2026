@@ -25,7 +25,7 @@ const roleConfig = {
     registerTitle: "Register HR Account",
     registerSubtitle: "Set up your company recruiter access",
     emailLabel: "Work Email",
-    extraField: { label: "Company ID", icon: "🏷️", key: "companyId", autocomplete: "organization" },
+    extraField: { label: "Company ID", icon: "", key: "companyId", autocomplete: "organization" },
     loginBtn: "Access Portal",
     registerBtn: "Register",
     showRegister: true,
@@ -38,7 +38,7 @@ const roleConfig = {
     registerTitle: "Admin Console",
     registerSubtitle: "Restricted — authorized access only",
     emailLabel: "Admin Email",
-    extraField: { label: "Admin Key", icon: "🔑", key: "adminKey", autocomplete: "off" },
+    extraField: { label: "Admin Key", icon: "", key: "adminKey", autocomplete: "off" },
     loginBtn: "Enter Console",
     registerBtn: "Enter Console",
     showRegister: false,
@@ -148,7 +148,7 @@ export default function LoginForm({ role, onSuccess }) {
             type="text"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            icon="🙍"
+            icon=""
             accent={cfg.accent}
             autoComplete="name"
             required
@@ -160,7 +160,7 @@ export default function LoginForm({ role, onSuccess }) {
           type="email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          icon="✉️"
+          icon=""
           accent={cfg.accent}
           autoComplete="email"
           required
@@ -197,7 +197,7 @@ export default function LoginForm({ role, onSuccess }) {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          icon="🔒"
+          icon=""
           accent={cfg.accent}
           autoComplete={isLogin ? "current-password" : "new-password"}
           required
@@ -215,7 +215,7 @@ export default function LoginForm({ role, onSuccess }) {
         </div>
       )}
 
-      {error && <p className={styles.error}>⚠ {error}</p>}
+      {error && <p className={styles.error}>{error}</p>}
 
       <button
         type="submit"

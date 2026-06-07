@@ -296,7 +296,7 @@ function ScreeningHistory({ onOpen, onNewSession }) {
           </div>
         </div>
         <button className={styles.btnPrimary} onClick={onNewSession}>
-          ＋ New Screening
+          New Screening
         </button>
       </div>
 
@@ -322,7 +322,7 @@ function ScreeningHistory({ onOpen, onNewSession }) {
           </table>
         ) : sessions.length === 0 ? (
           <div className={styles.empty}>
-            <div className={styles.emptyIcon}>🧬</div>
+            <div className={styles.emptyIcon}></div>
             <div className={styles.emptyTitle}>No screening sessions yet</div>
             <div className={styles.emptyText}>
               Upload a ZIP of resumes to run your first AI Workforce Intelligence analysis.
@@ -450,7 +450,7 @@ function UploadSession({ onSuccess, onBack }) {
       <div className={styles.pageHeader}>
         <div>
           <div className={styles.pageTitle}>
-            🧬 <span>New Workforce Intelligence</span> Screening
+            <span>New Workforce Intelligence</span> Screening
           </div>
           <div className={styles.pageSub}>
             Upload up to 500 resumes. The AI evaluates every candidate across 14 factors.
@@ -460,7 +460,7 @@ function UploadSession({ onSuccess, onBack }) {
       </div>
 
       <div className={styles.intelBanner}>
-        <div className={styles.intelIcon}>🤖</div>
+        <div className={styles.intelIcon}></div>
         <div className={styles.intelText}>
           <strong>14-Factor Workforce Intelligence Engine</strong><br />
           Skill Match · Experience · Education · Certifications · Industry · Projects ·
@@ -514,7 +514,7 @@ function UploadSession({ onSuccess, onBack }) {
           >
             <input type="file" accept=".zip" ref={fileRef}
               onChange={(e) => setZipFile(e.target.files[0] || null)} />
-            <div className={styles.dropIcon}>📦</div>
+            <div className={styles.dropIcon}></div>
             {zipFile ? (
               <div className={styles.dropFile}>✓ {zipFile.name} ({(zipFile.size / 1024 / 1024).toFixed(1)} MB)</div>
             ) : (
@@ -532,7 +532,7 @@ function UploadSession({ onSuccess, onBack }) {
 
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 16 }}>
           <button type="submit" className={styles.btnPrimary} style={{ padding: "12px 32px", fontSize: 15 }}>
-            🚀 Start AI Screening
+            Start AI Screening
           </button>
         </div>
       </form>
@@ -550,7 +550,7 @@ function TalentGenome({ candidate, onBack }) {
     <div className={styles.root}>
       <div className={styles.pageHeader}>
         <div>
-          <div className={styles.pageTitle}>🧬 Talent <span>Genome</span></div>
+          <div className={styles.pageTitle}>Talent <span>Genome</span></div>
           <div className={styles.pageSub}>14-Factor Workforce Intelligence Report</div>
         </div>
         <button className={styles.btnGhost} onClick={onBack}>← Back to Results</button>
@@ -570,15 +570,15 @@ function TalentGenome({ candidate, onBack }) {
             </div>
 
             <div className={styles.genomeMeta}>
-              {candidate.email && <span>✉ <strong>{candidate.email}</strong></span>}
-              {candidate.phone && <span>📞 <strong>{candidate.phone}</strong></span>}
+              {candidate.email && <span>Email: <strong>{candidate.email}</strong></span>}
+              {candidate.phone && <span>Phone: <strong>{candidate.phone}</strong></span>}
               {candidate.extractedEducation && candidate.extractedEducation !== "unknown" && (
-                <span>🎓 <strong style={{ textTransform: "capitalize" }}>{candidate.extractedEducation}</strong></span>
+                <span>Education: <strong style={{ textTransform: "capitalize" }}>{candidate.extractedEducation}</strong></span>
               )}
               {candidate.extractedExperienceYears && (
-                <span>🕒 <strong>{candidate.extractedExperienceYears} yrs experience</strong></span>
+                <span>Experience: <strong>{candidate.extractedExperienceYears} yrs experience</strong></span>
               )}
-              {candidate.hasLeadership && <span>👑 <strong>Leadership signals detected</strong></span>}
+              {candidate.hasLeadership && <span>Leadership signals detected</span>}
             </div>
           </div>
 
@@ -807,7 +807,7 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
       <div className={styles.pageHeader}>
         <div>
           <div className={styles.pageTitle}>
-            🧬 <span>{session?.jobTitle || "Screening Results"}</span>
+            <span>{session?.jobTitle || "Screening Results"}</span>
           </div>
           <div className={styles.pageSub}>
             AI Workforce Intelligence — {candidates.length} candidates ranked
@@ -815,9 +815,9 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
         </div>
         <div style={{ display: "flex", gap: 10 }}>
           <button className={styles.btnGhost} onClick={onBack}>← History</button>
-          <button className={styles.btnGhost} onClick={onNewSession}>＋ New</button>
+          <button className={styles.btnGhost} onClick={onNewSession}>New</button>
           <button className={styles.btnAccent} onClick={handleExport} disabled={exporting}>
-            {exporting ? "Exporting…" : "⬇ Export Excel"}
+            {exporting ? "Exporting…" : "Export Excel"}
           </button>
         </div>
       </div>
@@ -890,159 +890,91 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
         </div>
       </div>
 
-      {/* ── Main layout: table + optional sidebar ── */}
-      <div style={{ display: "flex", gap: 16, alignItems: "flex-start" }}>
-
-        {/* ── Candidate Table ── */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div className={styles.card} style={{ padding: 0 }}>
-            {visible.length === 0 ? (
-              <div className={styles.empty}>
-                <div className={styles.emptyIcon}>👥</div>
-                <div className={styles.emptyTitle}>No candidates</div>
-                <div className={styles.emptyText}>
-                  {hasAnyFactorFilter
-                    ? "No candidates meet the current factor filter thresholds. Try lowering the sliders."
-                    : "No candidates match this filter."}
-                </div>
-                {hasAnyFactorFilter && (
-                  <button className={styles.btnGhost} onClick={resetFilters} style={{ marginTop: 12 }}>
-                    Clear Factor Filters
-                  </button>
-                )}
-              </div>
-            ) : (
-              <div className={styles.tableWrap}>
-                <table className={styles.table}>
-                  <thead>
-                    <tr>
-                      <th style={{ width: 48 }}>Rank</th>
-                      <th>Candidate</th>
-                      <th>Contact</th>
-                      <th style={{ width: 80 }}>Score</th>
-                      <th>Recommendation</th>
-                      <th>Status</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {visible.map((c) => {
-                      const isExpanded = expandedRows[c._id];
-                      const approvedCount = Object.values(checkedFactors[c._id] || {}).filter(Boolean).length;
-
-                      return (
-                        <>
-                          <tr
-                            key={c._id}
-                            style={{
-                              cursor: "pointer",
-                              background: isExpanded ? "#0d1526" : undefined,
-                              borderLeft: isExpanded ? "3px solid #3b82f6" : "3px solid transparent",
-                              transition: "background 0.15s",
-                            }}
-                            onClick={() => toggleRow(c._id)}
-                          >
-                            <td>
-                              <span className={`${styles.rankBadge} ${c.rank <= 3 ? styles.top : ""}`}>
-                                {c.rank}
-                              </span>
-                            </td>
-                            <td>
-                              <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                <div>
-                                  <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>
-                                    {c.name || "—"}
-                                  </div>
-                                  <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
-                                    {c.fileName}
-                                  </div>
-                                </div>
-                              </div>
-                              {/* Inline approved count badge */}
-                              {approvedCount > 0 && (
-                                <div style={{
-                                  marginTop: 4, display: "inline-flex", alignItems: "center", gap: 4,
-                                  fontSize: 10, color: "#22c55e", background: "#0f2d1a",
-                                  padding: "1px 6px", borderRadius: 10, border: "1px solid #22c55e33"
-                                }}>
-                                  ✅ {approvedCount}/14 factors approved
-                                </div>
-                              )}
-                            </td>
-                            <td>
-                              <div style={{ fontSize: 13 }}>{c.email || "—"}</div>
-                              {c.phone && <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{c.phone}</div>}
-                            </td>
-                            <td>
-                              <span className={scoreClass(c.scores?.total ?? 0)}>
-                                {c.scores?.total ?? 0}
-                              </span>
-                            </td>
-                            <td>
-                              <span className={recClass(c.recommendation)}>{c.recommendation}</span>
-                            </td>
-                            <td>
-                              <span className={statusClass(c.status)}>{c.status}</span>
-                            </td>
-                            <td onClick={(e) => e.stopPropagation()}>
-                              <div className={styles.actions}>
-                                {/* Expand/collapse toggle */}
-                                <button
-                                  className={`${styles.actionBtn} ${isExpanded ? styles.genome : styles.genome}`}
-                                  onClick={(e) => { e.stopPropagation(); toggleRow(c._id); }}
-                                  title="View 14 factors inline"
-                                  style={{
-                                    background: isExpanded ? "#1e3a5f" : undefined,
-                                    color: isExpanded ? "#7dd3fc" : undefined,
-                                  }}
-                                >
-                                  {isExpanded ? "▲ Factors" : "▼ Factors"}
-                                </button>
-                                <button className={`${styles.actionBtn} ${styles.genome}`}
-                                  onClick={(e) => { e.stopPropagation(); onViewGenome(c); }}
-                                  title="Full Genome report">
-                                  🧬
-                                </button>
-                                {c.status !== "shortlisted" && (
-                                  <button className={`${styles.actionBtn} ${styles.shortlist}`}
-                                    disabled={updating === c._id}
-                                    onClick={(e) => { e.stopPropagation(); handleStatus(c._id, "shortlisted"); }}>
-                                    ✓
-                                  </button>
-                                )}
-                                {c.status !== "rejected" && (
-                                  <button className={`${styles.actionBtn} ${styles.reject}`}
-                                    disabled={updating === c._id}
-                                    onClick={(e) => { e.stopPropagation(); handleStatus(c._id, "rejected"); }}>
-                                    ✕
-                                  </button>
-                                )}
-                                {c.status !== "pending" && (
-                                  <button className={`${styles.actionBtn} ${styles.reset}`}
-                                    disabled={updating === c._id}
-                                    onClick={(e) => { e.stopPropagation(); handleStatus(c._id, "pending"); }}>
-                                    ↺
-                                  </button>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-
-                          {/* ── Inline 14-Factor Panel ── */}
-                          {isExpanded && (
-                            <FactorPanel
-                              candidate={c}
-                              checkedFactors={checkedFactors}
-                              onToggleCheck={toggleCheck}
-                            />
-                          )}
-                        </>
-                      );
-                    })}
-                  </tbody>
-                </table>
-              </div>
-            )}
+      <div className={styles.card} style={{ padding: 0 }}>
+        {visible.length === 0 ? (
+          <div className={styles.empty}>
+            <div className={styles.emptyIcon}></div>
+            <div className={styles.emptyTitle}>No candidates</div>
+            <div className={styles.emptyText}>No candidates match this filter.</div>
+          </div>
+        ) : (
+          <div className={styles.tableWrap}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th>Rank</th>
+                  <th>Candidate</th>
+                  <th>Contact</th>
+                  <th>Score</th>
+                  <th>Recommendation</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {visible.map((c) => (
+                  <tr key={c._id}>
+                    <td>
+                      <span className={`${styles.rankBadge} ${c.rank <= 3 ? styles.top : ""}`}>
+                        {c.rank}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ fontWeight: 600, color: "var(--text-primary)" }}>
+                        {c.name || "—"}
+                      </div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+                        {c.fileName}
+                      </div>
+                    </td>
+                    <td>
+                      <div style={{ fontSize: 13 }}>{c.email || "—"}</div>
+                      {c.phone && <div style={{ fontSize: 11, color: "var(--text-muted)" }}>{c.phone}</div>}
+                    </td>
+                    <td>
+                      <span className={scoreClass(c.scores?.total ?? 0)}>
+                        {c.scores?.total ?? 0}
+                      </span>
+                    </td>
+                    <td>
+                      <span className={recClass(c.recommendation)}>{c.recommendation}</span>
+                    </td>
+                    <td>
+                      <span className={statusClass(c.status)}>{c.status}</span>
+                    </td>
+                    <td>
+                      <div className={styles.actions}>
+                        <button className={`${styles.actionBtn} ${styles.genome}`}
+                          onClick={() => onViewGenome(c)}>
+                          Genome
+                        </button>
+                        {c.status !== "shortlisted" && (
+                          <button className={`${styles.actionBtn} ${styles.shortlist}`}
+                            disabled={updating === c._id}
+                            onClick={() => handleStatus(c._id, "shortlisted")}>
+                            ✓
+                          </button>
+                        )}
+                        {c.status !== "rejected" && (
+                          <button className={`${styles.actionBtn} ${styles.reject}`}
+                            disabled={updating === c._id}
+                            onClick={() => handleStatus(c._id, "rejected")}>
+                            ✕
+                          </button>
+                        )}
+                        {c.status !== "pending" && (
+                          <button className={`${styles.actionBtn} ${styles.reset}`}
+                            disabled={updating === c._id}
+                            onClick={() => handleStatus(c._id, "pending")}>
+                            ↺
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 

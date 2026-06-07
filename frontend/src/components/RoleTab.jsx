@@ -1,9 +1,9 @@
 import styles from "./RoleTab.module.css";
 
 const roles = [
-  { id: "candidate", label: "Candidate", icon: "👤" },
-  { id: "hr",        label: "HR",        icon: "🏢" },
-  { id: "admin",     label: "Admin",     icon: "⚙️" },
+  { id: "candidate", label: "Candidate" },
+  { id: "hr",        label: "HR" },
+  { id: "admin",     label: "Admin" },
 ];
 
 export default function RoleTab({ active, onChange }) {
@@ -18,7 +18,7 @@ export default function RoleTab({ active, onChange }) {
             className={`${styles.tab} ${active === r.id ? styles[r.id] : ""}`}
             onClick={() => onChange(r.id)}
           >
-            <span className={styles.icon}>{r.icon}</span>
+            
             <span className={styles.label}>{r.label}</span>
           </button>
         ))}

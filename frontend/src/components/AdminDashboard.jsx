@@ -7,7 +7,7 @@ import styles from "./AdminDashboard.module.css";
 function StatCard({ icon, label, value, color, sub }) {
   return (
     <div className={styles.statCard} style={{ "--c": color }}>
-      <div className={styles.statIcon}>{icon}</div>
+      
       <div className={styles.statInfo}>
         <div className={styles.statValue}>{value}</div>
         <div className={styles.statLabel}>{label}</div>
@@ -32,12 +32,12 @@ function Overview({ analytics, onTabChange }) {
       <h2 className={styles.sectionTitle}>Platform Overview</h2>
 
       <div className={styles.statsGrid}>
-        <StatCard icon="👥" label="Total Users"       value={totalUsers}        color="var(--admin-accent)" />
-        <StatCard icon="👤" label="Candidates"        value={candidates}        color="var(--cand-accent)"  />
-        <StatCard icon="🏢" label="HR Accounts"       value={hrUsers}           color="var(--hr-accent)"    />
-        <StatCard icon="💼" label="Active Jobs"       value={activeJobs}        color="#22c55e" sub={`${totalJobs} total`} />
-        <StatCard icon="📋" label="Applications"      value={totalApplications} color="#f59e0b" />
-        <StatCard icon="📅" label="Interviews"        value={totalInterviews}   color="#818cf8" />
+        <StatCard icon="▪" label="Total Users"       value={totalUsers}        color="var(--admin-accent)" />
+        <StatCard icon="▪" label="Candidates"        value={candidates}        color="var(--cand-accent)"  />
+        <StatCard icon="▪" label="HR Accounts"       value={hrUsers}           color="var(--hr-accent)"    />
+        <StatCard icon="▪" label="Active Jobs"       value={activeJobs}        color="#22c55e" sub={`${totalJobs} total`} />
+        <StatCard icon="▪" label="Applications"      value={totalApplications} color="#f59e0b" />
+        <StatCard icon="▪" label="Interviews"        value={totalInterviews}   color="#818cf8" />
       </div>
 
       <div className={styles.twoCol}>
@@ -75,7 +75,7 @@ function Overview({ analytics, onTabChange }) {
             ? <p className={styles.empty}>No jobs yet.</p>
             : recentJobs?.map((j) => (
               <div key={j._id} className={styles.listItem}>
-                <div className={styles.jobIcon}>💼</div>
+                <div className={styles.jobIcon}>▪</div>
                 <div className={styles.listInfo}>
                   <div className={styles.itemTitle}>{j.title}</div>
                   <div className={styles.itemSub}>{j.company} · {new Date(j.createdAt).toLocaleDateString()}</div>
@@ -147,7 +147,7 @@ function ManageUsers() {
     <div className={styles.section}>
       <div className={styles.toolbar}>
         <div className={styles.searchBar}>
-          <span>🔍</span>
+          <span></span>
           <input
             className={styles.searchInput}
             placeholder="Search by name or email..."
@@ -231,7 +231,7 @@ function ManageUsers() {
                       style={{ background: "#7c3aed22", color: "#a78bfa", border: "1px solid #7c3aed55" }}
                       onClick={() => { setResetModal({ id: u._id, email: u.email }); setNewPassword(""); }}
                     >
-                      🔑 Reset
+                      Reset
                     </button>
                   </td>
                 </tr>
@@ -245,7 +245,7 @@ function ManageUsers() {
       {resetModal && (
         <div style={{ position: "fixed", inset: 0, background: "#000a", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
           <div style={{ background: "#1e1e2e", border: "1px solid #7c3aed55", borderRadius: 12, padding: 32, width: 360, display: "flex", flexDirection: "column", gap: 16 }}>
-            <h3 style={{ margin: 0, color: "#a78bfa" }}>🔑 Reset Password</h3>
+            <h3 style={{ margin: 0, color: "#a78bfa" }}>Reset Password</h3>
             <p style={{ margin: 0, color: "#aaa", fontSize: 14 }}>User: <strong style={{ color: "#fff" }}>{resetModal.email}</strong></p>
             <input
               type="password"
@@ -312,7 +312,7 @@ function AllJobs() {
     <div className={styles.section}>
       <div className={styles.toolbar}>
         <div className={styles.searchBar}>
-          <span>🔍</span>
+          <span></span>
           <input
             className={styles.searchInput}
             placeholder="Search by title or company..."
@@ -403,10 +403,10 @@ function Analytics({ analytics }) {
       <h2 className={styles.sectionTitle}>Platform Analytics</h2>
 
       <div className={styles.statsGrid}>
-        <StatCard icon="👥" label="Total Users"       value={totalUsers}        color="var(--admin-accent)" />
-        <StatCard icon="💼" label="Total Jobs"        value={totalJobs}         color="var(--hr-accent)"    sub={`${activeJobs} active`} />
-        <StatCard icon="📋" label="Total Applications"value={totalApplications} color="var(--cand-accent)"  />
-        <StatCard icon="📅" label="Total Interviews"  value={totalInterviews}   color="#818cf8"             />
+        <StatCard icon="▪" label="Total Users"       value={totalUsers}        color="var(--admin-accent)" />
+        <StatCard icon="▪" label="Total Jobs"        value={totalJobs}         color="var(--hr-accent)"    sub={`${activeJobs} active`} />
+        <StatCard icon="▪" label="Total Applications"value={totalApplications} color="var(--cand-accent)"  />
+        <StatCard icon="▪" label="Total Interviews"  value={totalInterviews}   color="#818cf8"             />
       </div>
 
       <div className={styles.twoCol}>
@@ -586,12 +586,12 @@ function WorkforceIntelligence() {
   ];
 
   const kpiCards = [
-    { icon: "🏆", label: "Ready To Hire",  value: kpi.readyToHire,       color: "#22c55e",             sub: "score ≥ 80"   },
-    { icon: "🎯", label: "Hire Rate",      value: `${kpi.hireRate}%`,    color: "#3b82f6",             sub: "of evaluated" },
-    { icon: "🤖", label: "Avg AI Score",   value: kpi.avgAIScore,        color: "var(--admin-accent)", sub: "ranking"      },
-    { icon: "🎤", label: "Avg Interview",  value: kpi.avgInterviewScore, color: "#a78bfa",             sub: "score"        },
-    { icon: "📈", label: "Role Readiness", value: kpi.avgRoleReadiness,  color: "#f59e0b",             sub: "avg score"    },
-    { icon: "📊", label: "Eval Coverage",  value: `${kpi.evalCoverage}%`,color: "#2ec4b6",             sub: "interviewed"  },
+    { icon: "▪", label: "Ready To Hire",  value: kpi.readyToHire,       color: "#22c55e",             sub: "score ≥ 80"   },
+    { icon: "▪", label: "Hire Rate",      value: `${kpi.hireRate}%`,    color: "#3b82f6",             sub: "of evaluated" },
+    { icon: "▪", label: "Avg AI Score",   value: kpi.avgAIScore,        color: "var(--admin-accent)", sub: "ranking"      },
+    { icon: "▪", label: "Avg Interview",  value: kpi.avgInterviewScore, color: "#a78bfa",             sub: "score"        },
+    { icon: "▪", label: "Role Readiness", value: kpi.avgRoleReadiness,  color: "#f59e0b",             sub: "avg score"    },
+    { icon: "▪", label: "Eval Coverage",  value: `${kpi.evalCoverage}%`,color: "#2ec4b6",             sub: "interviewed"  },
   ];
 
   const recColor = { hire: "#22c55e", consider: "#f59e0b", pass: "#6b7280" };
@@ -602,7 +602,7 @@ function WorkforceIntelligence() {
       {/* ── Health Score Hero ── */}
       <div className={styles.card}>
         <div style={{ textAlign: "center", padding: "16px 0 12px" }}>
-          <div style={{ fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: ".1em", marginBottom: 8 }}>🧠 AI Hiring Health Score</div>
+          <div style={{ fontSize: 12, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: ".1em", marginBottom: 8 }}>AI Hiring Health Score</div>
           <div style={{ fontSize: 72, fontWeight: 800, fontFamily: "'Syne',sans-serif", color: healthColor, lineHeight: 1 }}>{healthScore}</div>
           <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 2 }}>/ 100</div>
           <div style={{ display: "inline-block", marginTop: 10, padding: "4px 18px", borderRadius: 20, fontSize: 13, fontWeight: 700, letterSpacing: ".08em", background: `${healthColor}22`, color: healthColor }}>
@@ -627,7 +627,7 @@ function WorkforceIntelligence() {
       {/* ── Top Candidate Ready Now ── */}
       {topCandidate && (
         <div className={styles.topCandidateCard}>
-          <div className={styles.cardTitle}>🏆 Top Candidate Ready Now</div>
+          <div className={styles.cardTitle}>Top Candidate Ready Now</div>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12, marginTop: 12 }}>
             <div>
               <div style={{ fontSize: 18, fontWeight: 700, fontFamily: "'Syne',sans-serif", color: "var(--text-primary)" }}>{topCandidate.fullName}</div>
@@ -653,7 +653,7 @@ function WorkforceIntelligence() {
       {/* ── Hiring Funnel + Skill Gap ── */}
       <div className={styles.twoCol}>
         <div className={styles.card}>
-          <div className={styles.cardTitle}>🔽 Hiring Funnel</div>
+          <div className={styles.cardTitle}>Hiring Funnel</div>
           <div style={{ display: "flex", flexDirection: "column", gap: 10, marginTop: 12 }}>
             {funnelSteps.map(({ label, value }) => (
               <div key={label}>
@@ -672,7 +672,7 @@ function WorkforceIntelligence() {
         </div>
 
         <div className={styles.card}>
-          <div className={styles.cardTitle}>⚡ Skill Gap Intelligence</div>
+          <div className={styles.cardTitle}>Skill Gap Intelligence</div>
           {skillGaps.length === 0 ? (
             <p className={styles.empty}>No skill data available yet.</p>
           ) : (
@@ -707,7 +707,7 @@ function WorkforceIntelligence() {
 
       {/* ── Interview Quality Breakdown ── */}
       <div className={styles.card}>
-        <div className={styles.cardTitle}>📊 Interview Quality Breakdown</div>
+        <div className={styles.cardTitle}>Interview Quality Breakdown</div>
         <div className={styles.breakdown} style={{ marginTop: 12 }}>
           {qualityMetrics.map(({ label, value }) => (
             <div key={label} className={styles.breakdownRow}>
@@ -727,9 +727,9 @@ function WorkforceIntelligence() {
       {/* ── AI Executive Report ── */}
       <div className={styles.card}>
         <div className={styles.cardHeader}>
-          <h3 className={styles.cardTitle}>✨ AI Executive Report</h3>
+          <h3 className={styles.cardTitle}>AI Executive Report</h3>
           <button className={styles.reportBtn} onClick={generateReport} disabled={reportLoading}>
-            {reportLoading ? "Generating..." : "✨ Generate Report"}
+            {reportLoading ? "Generating..." : "Generate Report"}
           </button>
         </div>
         {!report ? (
@@ -745,7 +745,7 @@ function WorkforceIntelligence() {
             </p>
             <div className={styles.twoCol} style={{ gap: 16 }}>
               <div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#22c55e", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 10 }}>✅ Strengths</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#22c55e", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 10 }}>Strengths</div>
                 {report.strengths?.map((s, i) => (
                   <div key={i} style={{ display: "flex", gap: 8, padding: "6px 0", borderBottom: "1px solid var(--border)", fontSize: 13, color: "var(--text-primary)" }}>
                     <span style={{ color: "#22c55e", flexShrink: 0 }}>•</span><span>{s}</span>
@@ -753,7 +753,7 @@ function WorkforceIntelligence() {
                 ))}
               </div>
               <div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#ef4444", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 10 }}>⚠️ Risks</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#ef4444", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 10 }}>Risks</div>
                 {report.risks?.map((r, i) => (
                   <div key={i} style={{ display: "flex", gap: 8, padding: "6px 0", borderBottom: "1px solid var(--border)", fontSize: 13, color: "var(--text-primary)" }}>
                     <span style={{ color: "#ef4444", flexShrink: 0 }}>•</span><span>{r}</span>
@@ -762,7 +762,7 @@ function WorkforceIntelligence() {
               </div>
             </div>
             <div style={{ marginTop: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: "#3b82f6", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 10 }}>💡 Recommendations</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: "#3b82f6", textTransform: "uppercase", letterSpacing: ".06em", marginBottom: 10 }}>Recommendations</div>
               {report.recommendations?.map((rec, i) => (
                 <div key={i} style={{ display: "flex", gap: 8, padding: "7px 0", borderBottom: "1px solid var(--border)", fontSize: 13, color: "var(--text-primary)" }}>
                   <span style={{ color: "#3b82f6", fontWeight: 700, flexShrink: 0 }}>{i + 1}.</span><span>{rec}</span>

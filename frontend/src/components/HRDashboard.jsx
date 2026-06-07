@@ -9,7 +9,7 @@ import * as XLSX from "xlsx";
 function StatCard({ icon, label, value, color }) {
   return (
     <div className={styles.statCard} style={{ "--c": color }}>
-      <span className={styles.statIcon}>{icon}</span>
+      
       <div>
         <div className={styles.statValue}>{value}</div>
         <div className={styles.statLabel}>{label}</div>
@@ -27,10 +27,10 @@ function Overview({ jobs, interviews, onTabChange }) {
     <div className={styles.section}>
       <h2 className={styles.sectionTitle}>HR Overview</h2>
       <div className={styles.statsRow}>
-        <StatCard icon="💼" label="Jobs Posted"       value={jobs.length}         color="var(--hr-accent)" />
-        <StatCard icon="👥" label="Total Applicants"  value={totalApplicants}     color="#2ec4b6" />
-        <StatCard icon="⭐" label="Shortlisted"       value={shortlisted}         color="#22c55e" />
-        <StatCard icon="📅" label="Interviews"        value={interviews.length}   color="#a78bfa" />
+        <StatCard icon="▪" label="Jobs Posted"       value={jobs.length}         color="var(--hr-accent)" />
+        <StatCard icon="▪" label="Total Applicants"  value={totalApplicants}     color="#2ec4b6" />
+        <StatCard icon="▪" label="Shortlisted"       value={shortlisted}         color="#22c55e" />
+        <StatCard icon="▪" label="Interviews"        value={interviews.length}   color="#a78bfa" />
       </div>
       <div className={styles.twoCol}>
         <div className={styles.card}>
@@ -96,7 +96,7 @@ function PostJob({ onPosted }) {
   return (
     <div className={styles.section}>
       <div className={styles.card} style={{ maxWidth: 640 }}>
-        <h2 className={styles.cardTitle}>➕ Post a New Job</h2>
+        <h2 className={styles.cardTitle}>Post a New Job</h2>
         {[
           { k: "title",       label: "Job Title *",              placeholder: "e.g. Senior React Developer" },
           { k: "company",     label: "Company Name *",           placeholder: "Your company" },
@@ -281,7 +281,7 @@ function CandidateModal({ applicant, onClose }) {
         {/* Resume link */}
         {c?.resumeUrl && (
           <a href={c.resumeUrl} target="_blank" rel="noreferrer" className={styles.inlineBtn} style={{ display: "inline-block" }}>
-            📄 View Resume ↗
+            View Resume
           </a>
         )}
       </div>
@@ -304,7 +304,7 @@ function Candidates({ jobs }) {
     <div className={styles.section}>
       {selected && <CandidateModal applicant={selected} onClose={() => setSelected(null)} />}
       <div className={styles.searchBar}>
-        <span>🔍</span>
+        <span></span>
         <input placeholder="Search candidates..." value={search} onChange={(e) => setSearch(e.target.value)} className={styles.searchInput} />
       </div>
       <div className={styles.tableWrap}>
@@ -324,7 +324,7 @@ function Candidates({ jobs }) {
                 <td><span className={`${styles.badge} ${styles[a.status]}`}>{a.status}</span></td>
                 <td>{a.aiScore != null ? <span className={styles.aiScore}>{a.aiScore}</span> : "—"}</td>
                 <td>{a.candidate?.resumeUrl ? <a href={a.candidate.resumeUrl} target="_blank" rel="noreferrer" className={styles.inlineBtn} onClick={(e) => e.stopPropagation()}>View ↗</a> : "—"}</td>
-                <td><button className={styles.inlineBtn} onClick={(e) => { e.stopPropagation(); setSelected(a); }}>📊 Details</button></td>
+                <td><button className={styles.inlineBtn} onClick={(e) => { e.stopPropagation(); setSelected(a); }}>Details</button></td>
               </tr>
             ))}
           </tbody>
@@ -376,7 +376,7 @@ function Interviews({ interviews, jobs, onScheduled, onRefresh }) {
     <div className={styles.section}>
       <div className={styles.twoCol}>
         <div className={styles.card}>
-          <h3 className={styles.cardTitle}>📅 Schedule Interview</h3>
+          <h3 className={styles.cardTitle}>Schedule Interview</h3>
           <div className={styles.formGroup}>
             <label className={styles.label}>Candidate *</label>
             <select className={styles.input} value={form.candidateId} onChange={(e) => set("candidateId", e.target.value)}>
@@ -436,7 +436,7 @@ function Interviews({ interviews, jobs, onScheduled, onRefresh }) {
                       {iv.communicationScore != null && <span className={styles.itemSub}>Comm <strong style={{ color: "#e2e8f0" }}>{iv.communicationScore}/100</strong></span>}
                       {iv.confidenceScore    != null && <span className={styles.itemSub}>Conf <strong style={{ color: "#e2e8f0" }}>{iv.confidenceScore}/100</strong></span>}
                       {iv.candidate?.roleReadinessScore != null && (
-                        <span className={styles.itemSub}>🎯 Readiness <strong style={{ color: "#22c55e" }}>{iv.candidate.roleReadinessScore}/100</strong></span>
+                        <span className={styles.itemSub}>Readiness <strong style={{ color: "#22c55e" }}>{iv.candidate.roleReadinessScore}/100</strong></span>
                       )}
                       {iv.recommendation && (
                         <span className={styles.badge} style={{ color: recColor[iv.recommendation] || "#e2e8f0" }}>
@@ -461,7 +461,7 @@ function Interviews({ interviews, jobs, onScheduled, onRefresh }) {
                     )}
                     {iv.status === "completed" && iv.mockScore == null && (
                       <button className={styles.aiBtn} onClick={() => evaluate(iv._id)} disabled={isBusy}>
-                        {evaluating === iv._id ? "Evaluating..." : "✨ AI Evaluate"}
+                        {evaluating === iv._id ? "Evaluating..." : "AI Evaluate"}
                       </button>
                     )}
                   </div>
@@ -551,7 +551,7 @@ function AIRanking({ jobs }) {
   return (
     <div className={styles.section}>
       <div className={styles.card}>
-        <h2 className={styles.cardTitle}>🤖 AI Resume Screening</h2>
+        <h2 className={styles.cardTitle}>AI Resume Screening</h2>
         <p className={styles.cardSub}>Select a job to let AI analyze and screen all applicants across 14 factors, scoring them 0–100.</p>
         <div className={styles.rankControls}>
           <select className={styles.input} style={{ flex: 2 }} value={selectedJob} onChange={(e) => setSelectedJob(e.target.value)}>
@@ -570,7 +570,7 @@ function AIRanking({ jobs }) {
             title="Leave blank to screen all candidates"
           />
           <button className={styles.aiBtn} onClick={rank} disabled={loading || !selectedJob}>
-            {loading ? "Analyzing..." : "✨ Screen with AI"}
+            {loading ? "Analyzing..." : "Screen with AI"}
           </button>
         </div>
       </div>
@@ -580,7 +580,7 @@ function AIRanking({ jobs }) {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
             <div style={{ color: "#94a3b8", fontSize: 13 }}>{rankings.length} candidate{rankings.length !== 1 ? "s" : ""} screened</div>
             <button className={styles.successBtn} onClick={exportExcel}>
-              📥 Export to Excel
+              Export to Excel
             </button>
           </div>
           {rankings.map((r, i) => (
@@ -593,7 +593,7 @@ function AIRanking({ jobs }) {
                 {/* 14 Factor bars */}
                 {r.factors && (
                   <div style={{ margin: "12px 0" }}>
-                    <div className={styles.rankDetailTitle} style={{ marginBottom: 8 }}>📊 14-Factor Analysis</div>
+                    <div className={styles.rankDetailTitle} style={{ marginBottom: 8 }}>14-Factor Analysis</div>
                     <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "6px 20px" }}>
                       {[
                         ["Skill Match",              r.factors.skillMatch],
@@ -632,11 +632,11 @@ function AIRanking({ jobs }) {
 
                 <div className={styles.rankDetails}>
                   <div>
-                    <div className={styles.rankDetailTitle}>✅ Strengths</div>
+                    <div className={styles.rankDetailTitle}>Strengths</div>
                     {r.strengths?.map((s, j) => <div key={j} className={styles.strengthItem}>• {s}</div>)}
                   </div>
                   <div>
-                    <div className={styles.rankDetailTitle}>⚠️ Gaps</div>
+                    <div className={styles.rankDetailTitle}>Gaps</div>
                     {r.gaps?.map((g, j) => <div key={j} className={styles.gapItem}>• {g}</div>)}
                   </div>
                 </div>
@@ -675,7 +675,7 @@ function HROnboarding() {
   return (
     <div className={styles.section}>
       <div className={styles.sectionHeader}>
-        <h2 className={styles.sectionTitle}>🚀 Onboarding Pipeline</h2>
+        <h2 className={styles.sectionTitle}>Onboarding Pipeline</h2>
         <span className={styles.itemSub}>{candidates.length} candidate{candidates.length !== 1 ? "s" : ""} ready</span>
       </div>
 
@@ -756,9 +756,9 @@ function HROnboarding() {
                 {/* Day 1 checklist */}
                 {selected.onboardingPlan?.day1Checklist?.length > 0 && (
                   <div style={{ marginBottom: 14 }}>
-                    <div className={styles.rankDetailTitle}>📋 Day 1 Checklist</div>
+                    <div className={styles.rankDetailTitle}>Day 1 Checklist</div>
                     {selected.onboardingPlan.day1Checklist.map((item, i) => (
-                      <div key={i} style={{ color: "#94a3b8", fontSize: 13, padding: "3px 0" }}>☐ {item}</div>
+                      <div key={i} style={{ color: "#94a3b8", fontSize: 13, padding: "3px 0" }}>- {item}</div>
                     ))}
                   </div>
                 )}
@@ -770,7 +770,7 @@ function HROnboarding() {
                   { label: "90-Day Goals", key: "day90Goals" },
                 ].map(({ label, key }) => selected.onboardingPlan?.[key]?.length > 0 && (
                   <div key={key} style={{ marginBottom: 14 }}>
-                    <div className={styles.rankDetailTitle}>🎯 {label}</div>
+                    <div className={styles.rankDetailTitle}>{label}</div>
                     {selected.onboardingPlan[key].map((g, i) => (
                       <div key={i} style={{ color: "#94a3b8", fontSize: 13, padding: "3px 0" }}>• {g}</div>
                     ))}
@@ -780,7 +780,7 @@ function HROnboarding() {
                 {/* Skills to learn */}
                 {selected.onboardingPlan?.skillsToLearn?.length > 0 && (
                   <div style={{ marginBottom: 14 }}>
-                    <div className={styles.rankDetailTitle}>📚 Skills to Learn</div>
+                    <div className={styles.rankDetailTitle}>Skills to Learn</div>
                     {selected.onboardingPlan.skillsToLearn.map((s, i) => (
                       <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "4px 0", borderBottom: "1px solid #1e293b" }}>
                         <div>
@@ -799,13 +799,13 @@ function HROnboarding() {
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
                   {selected.onboardingPlan?.strengths?.length > 0 && (
                     <div>
-                      <div className={styles.rankDetailTitle}>✅ Strengths</div>
+                      <div className={styles.rankDetailTitle}>Strengths</div>
                       {selected.onboardingPlan.strengths.map((s, i) => <div key={i} className={styles.strengthItem}>• {s}</div>)}
                     </div>
                   )}
                   {selected.onboardingPlan?.areasToGrow?.length > 0 && (
                     <div>
-                      <div className={styles.rankDetailTitle}>📈 Areas to Grow</div>
+                      <div className={styles.rankDetailTitle}>Areas to Grow</div>
                       {selected.onboardingPlan.areasToGrow.map((a, i) => <div key={i} className={styles.gapItem}>• {a}</div>)}
                     </div>
                   )}
@@ -813,7 +813,7 @@ function HROnboarding() {
 
                 {/* Submitted documents */}
                 <div style={{ marginTop: 8 }}>
-                  <div className={styles.rankDetailTitle}>📎 Submitted Documents</div>
+                  <div className={styles.rankDetailTitle}>Submitted Documents</div>
                   {!selected.onboardingDocs?.length
                     ? <p className={styles.empty} style={{ fontSize: 13, marginTop: 6 }}>No documents submitted yet.</p>
                     : selected.onboardingDocs.map((doc) => (
