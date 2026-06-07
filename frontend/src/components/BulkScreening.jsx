@@ -4,20 +4,20 @@ import styles from "./BulkScreening.module.css";
 
 // ── 14-Factor framework definition ───────────────────────────────────────────
 const FACTORS = [
-  { key: "skillMatch",             label: "Skill Match",                    max: 15 },
-  { key: "relevantExperience",     label: "Relevant Experience",            max: 12 },
-  { key: "educationQualification", label: "Education Qualification",        max:  8 },
-  { key: "certifications",         label: "Certifications",                 max:  5 },
-  { key: "industryExperience",     label: "Industry Experience",            max:  7 },
-  { key: "projectExperience",      label: "Project Experience",             max:  8 },
-  { key: "technicalCompetency",    label: "Technical Competency",           max: 10 },
-  { key: "domainKnowledge",        label: "Domain Knowledge",               max:  7 },
-  { key: "roleRelevance",          label: "Role Relevance",                 max:  8 },
-  { key: "achievementsImpact",     label: "Achievements & Impact",          max:  5 },
-  { key: "careerStability",        label: "Career Stability",               max:  4 },
-  { key: "communicationQuality",   label: "Communication & Resume Quality", max:  4 },
-  { key: "leadershipExperience",   label: "Leadership Experience",          max:  4 },
-  { key: "learningAgility",        label: "Learning Agility",               max:  3 },
+  { key: "skillMatch",             label: "Skill Match",                    max: 15, icon: "🎯" },
+  { key: "relevantExperience",     label: "Relevant Experience",            max: 12, icon: "🕒" },
+  { key: "educationQualification", label: "Education",                      max:  8, icon: "🎓" },
+  { key: "certifications",         label: "Certifications",                 max:  5, icon: "📜" },
+  { key: "industryExperience",     label: "Industry Experience",            max:  7, icon: "🏭" },
+  { key: "projectExperience",      label: "Project Experience",             max:  8, icon: "🔧" },
+  { key: "technicalCompetency",    label: "Technical Competency",           max: 10, icon: "💡" },
+  { key: "domainKnowledge",        label: "Domain Knowledge",               max:  7, icon: "📚" },
+  { key: "roleRelevance",          label: "Role Relevance",                 max:  8, icon: "🎪" },
+  { key: "achievementsImpact",     label: "Achievements & Impact",          max:  5, icon: "🏆" },
+  { key: "careerStability",        label: "Career Stability",               max:  4, icon: "📈" },
+  { key: "communicationQuality",   label: "Communication & Resume",         max:  4, icon: "✍️"  },
+  { key: "leadershipExperience",   label: "Leadership",                     max:  4, icon: "👑" },
+  { key: "learningAgility",        label: "Learning Agility",               max:  3, icon: "⚡" },
 ];
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
@@ -49,6 +49,219 @@ const fmtDate = (iso) =>
 
 const initials = (name, email) =>
   (name || email || "?")[0].toUpperCase();
+
+// ── Factor Score Bar (inline compact) ────────────────────────────────────────
+function FactorBar({ factor, value }) {
+  const pct = factor.max > 0 ? Math.min(value / factor.max, 1) : 0;
+  const color = pct >= 0.75 ? "#22c55e" : pct >= 0.5 ? "#f59e0b" : pct >= 0.25 ? "#f97316" : "#ef4444";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+      <div style={{
+        flex: 1, height: 6, background: "#1e293b", borderRadius: 3, overflow: "hidden"
+      }}>
+        <div style={{
+          height: "100%", width: `${pct * 100}%`,
+          background: color, borderRadius: 3,
+          transition: "width 0.5s ease",
+        }} />
+      </div>
+      <span style={{ fontSize: 11, color, fontWeight: 700, minWidth: 32, textAlign: "right" }}>
+        {value}/{factor.max}
+      </span>
+    </div>
+  );
+}
+
+// ── Inline 14-Factor Panel (expanded row) ─────────────────────────────────────
+function FactorPanel({ candidate, checkedFactors, onToggleCheck }) {
+  const scores = candidate.scores || {};
+
+  return (
+    <tr>
+      <td colSpan={7} style={{ padding: 0, background: "#0d1526" }}>
+        <div style={{
+          padding: "20px 24px",
+          borderTop: "1px solid #1e3a5f",
+          borderBottom: "1px solid #1e3a5f",
+          animation: "fadeSlideIn 0.18s ease",
+        }}>
+          {/* Header */}
+          <div style={{
+            display: "flex", justifyContent: "space-between", alignItems: "center",
+            marginBottom: 16
+          }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "#7dd3fc", letterSpacing: "0.08em" }}>
+              📊 14-FACTOR BREAKDOWN — {candidate.name || "Unknown"}
+            </div>
+            <div style={{ fontSize: 11, color: "#475569" }}>
+              ☑ = mark factor as passed for this candidate
+            </div>
+          </div>
+
+          {/* Factor grid: 2 columns */}
+          <div style={{
+            display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px 32px"
+          }}>
+            {FACTORS.map((f) => {
+              const val = scores[f.key] ?? 0;
+              const pct = f.max > 0 ? val / f.max : 0;
+              const isChecked = checkedFactors[candidate._id]?.[f.key] || false;
+
+              return (
+                <div key={f.key} style={{
+                  display: "flex", alignItems: "center", gap: 10,
+                  padding: "8px 10px",
+                  borderRadius: 8,
+                  background: isChecked ? "#0f2d1a" : "transparent",
+                  border: `1px solid ${isChecked ? "#22c55e33" : "#1e293b"}`,
+                  cursor: "pointer",
+                  transition: "background 0.15s, border-color 0.15s",
+                }}
+                  onClick={() => onToggleCheck(candidate._id, f.key)}
+                >
+                  {/* Checkbox */}
+                  <div style={{
+                    width: 18, height: 18, flexShrink: 0,
+                    borderRadius: 4, border: `2px solid ${isChecked ? "#22c55e" : "#334155"}`,
+                    background: isChecked ? "#22c55e" : "transparent",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    transition: "all 0.15s",
+                  }}>
+                    {isChecked && (
+                      <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
+                        <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/>
+                      </svg>
+                    )}
+                  </div>
+
+                  {/* Icon + Label */}
+                  <div style={{ fontSize: 13, minWidth: 18 }}>{f.icon}</div>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{
+                      fontSize: 11, fontWeight: 600,
+                      color: isChecked ? "#86efac" : "#94a3b8",
+                      marginBottom: 4, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis"
+                    }}>
+                      {f.label}
+                    </div>
+                    <FactorBar factor={f} value={val} />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Summary row */}
+          <div style={{
+            marginTop: 14, paddingTop: 12, borderTop: "1px solid #1e293b",
+            display: "flex", gap: 16, alignItems: "center",
+          }}>
+            <div style={{ fontSize: 12, color: "#64748b" }}>
+              ✅ <strong style={{ color: "#22c55e" }}>
+                {Object.values(checkedFactors[candidate._id] || {}).filter(Boolean).length}
+              </strong> / 14 factors approved
+            </div>
+            {candidate.summary && (
+              <div style={{
+                fontSize: 12, color: "#475569", fontStyle: "italic",
+                flex: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap"
+              }}>
+                "{candidate.summary}"
+              </div>
+            )}
+          </div>
+        </div>
+      </td>
+    </tr>
+  );
+}
+
+// ── Factor Filter Sidebar ─────────────────────────────────────────────────────
+function FactorFilterPanel({ filters, onFilterChange, onReset, matchCount, totalCount }) {
+  const hasAnyFilter = FACTORS.some((f) => filters[f.key] > 0);
+
+  return (
+    <div style={{
+      width: 260, flexShrink: 0,
+      background: "#0b1220",
+      border: "1px solid #1e3a5f",
+      borderRadius: 12,
+      padding: "16px 14px",
+      alignSelf: "flex-start",
+      position: "sticky",
+      top: 16,
+    }}>
+      {/* Header */}
+      <div style={{
+        display: "flex", justifyContent: "space-between", alignItems: "center",
+        marginBottom: 14,
+      }}>
+        <div style={{ fontSize: 12, fontWeight: 700, color: "#7dd3fc", letterSpacing: "0.08em" }}>
+          🎛 FACTOR FILTERS
+        </div>
+        {hasAnyFilter && (
+          <button onClick={onReset} style={{
+            fontSize: 10, color: "#ef4444", background: "none", border: "none",
+            cursor: "pointer", padding: "2px 6px", borderRadius: 4,
+            border: "1px solid #ef444433",
+          }}>
+            Reset
+          </button>
+        )}
+      </div>
+
+      {/* Match count */}
+      <div style={{
+        fontSize: 12, color: "#64748b", marginBottom: 14,
+        paddingBottom: 12, borderBottom: "1px solid #1e293b",
+      }}>
+        Showing <strong style={{ color: "#e2e8f0" }}>{matchCount}</strong> of {totalCount} candidates
+      </div>
+
+      {/* Factor sliders */}
+      {FACTORS.map((f) => {
+        const val = filters[f.key] || 0;
+        const pct = val / f.max;
+        return (
+          <div key={f.key} style={{ marginBottom: 12 }}>
+            <div style={{
+              display: "flex", justifyContent: "space-between",
+              fontSize: 10, color: val > 0 ? "#7dd3fc" : "#475569",
+              fontWeight: val > 0 ? 700 : 400, marginBottom: 5,
+            }}>
+              <span>{f.icon} {f.label}</span>
+              <span style={{ color: val > 0 ? "#22c55e" : "#475569" }}>
+                {val > 0 ? `≥ ${val}/${f.max}` : "any"}
+              </span>
+            </div>
+            <input
+              type="range"
+              min={0}
+              max={f.max}
+              value={val}
+              onChange={(e) => onFilterChange(f.key, Number(e.target.value))}
+              style={{
+                width: "100%", height: 4, cursor: "pointer",
+                accentColor: val > 0 ? "#22c55e" : "#334155",
+              }}
+            />
+          </div>
+        );
+      })}
+
+      {hasAnyFilter && (
+        <div style={{
+          marginTop: 8, padding: "8px 10px",
+          background: "#0f2d1a", borderRadius: 8,
+          border: "1px solid #22c55e33",
+          fontSize: 11, color: "#86efac",
+        }}>
+          Active filters applied. Candidates must meet ALL minimum thresholds.
+        </div>
+      )}
+    </div>
+  );
+}
 
 // ── PAGE 4 — Screening History ────────────────────────────────────────────────
 function ScreeningHistory({ onOpen, onNewSession }) {
@@ -479,13 +692,19 @@ function TalentGenome({ candidate, onBack }) {
 
 // ── PAGE 2 — Session Results ──────────────────────────────────────────────────
 function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
-  const [session,    setSession]    = useState(null);
-  const [stats,      setStats]      = useState(null);
-  const [candidates, setCandidates] = useState([]);
-  const [loading,    setLoading]    = useState(true);
-  const [exporting,  setExporting]  = useState(false);
-  const [updating,   setUpdating]   = useState(null);
-  const [filter,     setFilter]     = useState("all");
+  const [session,         setSession]         = useState(null);
+  const [stats,           setStats]           = useState(null);
+  const [candidates,      setCandidates]      = useState([]);
+  const [loading,         setLoading]         = useState(true);
+  const [exporting,       setExporting]       = useState(false);
+  const [updating,        setUpdating]        = useState(null);
+  const [filter,          setFilter]          = useState("all");
+  const [expandedRows,    setExpandedRows]    = useState({});      // { candidateId: bool }
+  const [checkedFactors,  setCheckedFactors]  = useState({});      // { candidateId: { factorKey: bool } }
+  const [factorFilters,   setFactorFilters]   = useState(         // { factorKey: minValue }
+    () => FACTORS.reduce((acc, f) => ({ ...acc, [f.key]: 0 }), {})
+  );
+  const [showFilterPanel, setShowFilterPanel] = useState(false);
 
   const load = async () => {
     setLoading(true);
@@ -527,9 +746,47 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
     finally { setExporting(false); }
   };
 
-  const visible = filter === "all"
+  // Toggle row expansion
+  const toggleRow = (id) => {
+    setExpandedRows((prev) => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  // Toggle a specific factor checkbox for a candidate
+  const toggleCheck = (candidateId, factorKey) => {
+    setCheckedFactors((prev) => ({
+      ...prev,
+      [candidateId]: {
+        ...(prev[candidateId] || {}),
+        [factorKey]: !(prev[candidateId]?.[factorKey]),
+      },
+    }));
+  };
+
+  // Update a factor filter threshold
+  const handleFilterChange = (factorKey, value) => {
+    setFactorFilters((prev) => ({ ...prev, [factorKey]: value }));
+  };
+
+  // Reset all factor filters
+  const resetFilters = () => {
+    setFactorFilters(FACTORS.reduce((acc, f) => ({ ...acc, [f.key]: 0 }), {}));
+  };
+
+  const hasAnyFactorFilter = FACTORS.some((f) => factorFilters[f.key] > 0);
+
+  // Apply status filter first, then factor filters
+  const statusFiltered = filter === "all"
     ? candidates
     : candidates.filter((c) => c.status === filter);
+
+  const visible = statusFiltered.filter((c) => {
+    if (!hasAnyFactorFilter) return true;
+    return FACTORS.every((f) => {
+      const min = factorFilters[f.key];
+      if (!min) return true;
+      return (c.scores?.[f.key] ?? 0) >= min;
+    });
+  });
 
   if (loading) {
     return (
@@ -546,6 +803,7 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
 
   return (
     <div className={styles.root}>
+      {/* ── Page header ── */}
       <div className={styles.pageHeader}>
         <div>
           <div className={styles.pageTitle}>
@@ -564,6 +822,7 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
         </div>
       </div>
 
+      {/* ── Stats ── */}
       <div className={styles.statsGrid}>
         <div className={styles.statCard} style={{ "--c": "var(--hr-accent)" }}>
           <div className={styles.statValue}>{session?.totalUploaded ?? 0}</div>
@@ -601,7 +860,8 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
         </>}
       </div>
 
-      <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+      {/* ── Filter bar ── */}
+      <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
         {["all","pending","shortlisted","rejected"].map((f) => (
           <button key={f}
             className={filter === f ? styles.btnAccent : styles.btnGhost}
@@ -610,6 +870,24 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
             {f === "all" ? `All (${candidates.length})` : f}
           </button>
         ))}
+
+        <div style={{ marginLeft: "auto", display: "flex", gap: 8, alignItems: "center" }}>
+          {hasAnyFactorFilter && (
+            <span style={{
+              fontSize: 11, color: "#22c55e", background: "#0f2d1a",
+              padding: "3px 8px", borderRadius: 6, border: "1px solid #22c55e33"
+            }}>
+              {visible.length} match factor filters
+            </span>
+          )}
+          <button
+            className={showFilterPanel ? styles.btnAccent : styles.btnGhost}
+            onClick={() => setShowFilterPanel((p) => !p)}
+            style={{ display: "flex", alignItems: "center", gap: 6 }}
+          >
+            🎛 Factor Filters {hasAnyFactorFilter ? "●" : ""}
+          </button>
+        </div>
       </div>
 
       <div className={styles.card} style={{ padding: 0 }}>
@@ -698,8 +976,27 @@ function SessionResults({ sessionId, onViewGenome, onBack, onNewSession }) {
               </tbody>
             </table>
           </div>
+        </div>
+
+        {/* ── Factor Filter Sidebar ── */}
+        {showFilterPanel && (
+          <FactorFilterPanel
+            filters={factorFilters}
+            onFilterChange={handleFilterChange}
+            onReset={resetFilters}
+            matchCount={visible.length}
+            totalCount={statusFiltered.length}
+          />
         )}
       </div>
+
+      {/* Inline animation keyframe */}
+      <style>{`
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 }

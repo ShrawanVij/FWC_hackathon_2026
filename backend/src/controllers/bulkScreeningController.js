@@ -30,9 +30,13 @@ export const createSession = async (req, res) => {
 
     // Extract ZIP
     const zip = new AdmZip(req.file.buffer);
-    const entries = zip.getEntries().filter((e) => {
+    const allEntries = zip.getEntries();
+    const entries = allEntries.filter((e) => {
       const name = e.entryName.toLowerCase();
-      return !e.isDirectory && (name.endsWith(".pdf") || name.endsWith(".docx") || name.endsWith(".txt"));
+      const base = name.split("/").pop();
+      return !e.isDirectory
+        && !base.startsWith("._")          // exclude Mac metadata files
+        && (name.endsWith(".pdf") || name.endsWith(".docx") || name.endsWith(".txt"));
     });
 
     if (entries.length === 0)
@@ -54,31 +58,41 @@ export const createSession = async (req, res) => {
     let failed = 0;
     for (const entry of entries) {
       const filename = entry.entryName.split("/").pop().split("\\").pop();
-      const buffer   = entry.getData();
-      const text     = await extractText(filename, buffer);
-      if (text.length > 50) {
-        resumes.push({ filename, text: text.slice(0, 2000) });
-      } else {
-        failed++;
+      if (!filename) continue;
+      const buffer = entry.getData();
+      let text = await extractText(filename, buffer);
+
+      // Fallback: use filename as text if extraction fails (handles scanned PDFs)
+      if (text.length <= 20) {
+        const nameFromFile = filename.replace(/\.[^/.]+$/, "").replace(/_/g, " ");
+        text = `Candidate Name: ${nameFromFile}`;
       }
+
+      resumes.push({ filename, text: text.slice(0, 2000) });
     }
 
     if (resumes.length === 0) {
       await BulkSession.findByIdAndUpdate(session._id, { status: "failed", totalFailed: failed });
-      return res.status(400).json({ success: false, message: "Could not extract text from any resume in the ZIP" });
+      return res.status(400).json({ success: false, message: "Could not process any resume in the ZIP" });
     }
 
-    // AI screening
-    const prompt = `
-You are a senior technical recruiter AI. Screen these ${resumes.length} resumes against the job below.
+    // ── AI screening in batches of 10 ────────────────────────────────────────
+    const BATCH_SIZE = 10;
+    const allResults = [];
+
+    for (let i = 0; i < resumes.length; i += BATCH_SIZE) {
+      const batch = resumes.slice(i, i + BATCH_SIZE);
+
+      const prompt = `
+You are a senior technical recruiter AI. Screen these ${batch.length} resumes against the job below.
 
 JOB TITLE: ${jobTitle}
-JOB DESCRIPTION: ${jobDescription.slice(0, 1500)}
+JOB DESCRIPTION: ${jobDescription.slice(0, 800)}
 REQUIRED SKILLS: ${jobSkills || "Not specified"}
 REQUIREMENTS: ${jobRequirements || "Not specified"}
 
 RESUMES:
-${resumes.map((r, i) => `--- Resume ${i + 1}: ${r.filename} ---\n${r.text}`).join("\n\n")}
+${batch.map((r, idx) => `--- Resume ${idx + 1}: ${r.filename} ---\n${r.text}`).join("\n\n")}
 
 For each resume, extract contact info and score across 14 weighted factors. Total score must be out of 100.
 
@@ -90,27 +104,27 @@ leadershipExperience=4, learningAgility=3
 
 Recommendation rules:
 - total >= 80 → "Strong Hire"
-- total >= 65 → "Hire"  
+- total >= 65 → "Hire"
 - total >= 45 → "Consider"
 - total < 45  → "Reject"
 
-Return ONLY a valid JSON array sorted by total score descending:
+Return ONLY a valid JSON array sorted by total score descending. No markdown, no backticks:
 [
   {
     "fileName": "<filename>",
     "name": "<extracted full name or filename without extension>",
     "email": "<extracted email or empty string>",
     "phone": "<extracted phone or empty string>",
-    "extractedEducation": "<degree level: high school|bachelor|master|phd|unknown>",
+    "extractedEducation": "<high school|bachelor|master|phd|unknown>",
     "extractedExperienceYears": <number or 0>,
-    "extractedCertifications": ["cert1", "cert2"],
+    "extractedCertifications": ["cert1"],
     "extractedIndustries": ["industry1"],
     "hasLeadership": <true or false>,
     "skills": ["skill1", "skill2"],
     "recommendation": "<Strong Hire|Hire|Consider|Reject>",
     "summary": "<2 sentence assessment>",
-    "strengths": ["strength1", "strength2"],
-    "gaps": ["gap1", "gap2"],
+    "strengths": ["strength1"],
+    "gaps": ["gap1"],
     "scores": {
       "total": <0-100>,
       "skillMatch": <0-15>,
@@ -131,26 +145,47 @@ Return ONLY a valid JSON array sorted by total score descending:
   }
 ]`;
 
-    const response = await groq.chat.completions.create({
-      model: "llama-3.3-70b-versatile",
-      messages: [
-        { role: "system", content: "You are a JSON-only API. Respond with a valid JSON array and nothing else." },
-        { role: "user", content: prompt },
-      ],
-      temperature: 0.2,
-    });
+      try {
+        const response = await groq.chat.completions.create({
+          model: "llama-3.3-70b-versatile",
+          messages: [
+            { role: "system", content: "You are a JSON-only API. Respond with a valid JSON array and nothing else. No markdown, no backticks, no explanation." },
+            { role: "user", content: prompt },
+          ],
+          temperature: 0.1,
+          max_tokens: 4000,
+        });
 
-    const raw       = response.choices[0].message.content;
-    const jsonStart = raw.indexOf("[");
-    const jsonEnd   = raw.lastIndexOf("]");
-    if (jsonStart === -1 || jsonEnd === -1)
-      throw new Error("AI did not return valid JSON");
+        const raw = response.choices[0].message.content;
+        const jsonStart = raw.indexOf("[");
+        const jsonEnd = raw.lastIndexOf("]");
+        if (jsonStart === -1 || jsonEnd === -1) {
+          console.warn(`Batch ${i}-${i + BATCH_SIZE}: AI returned no JSON, skipping`);
+          failed += batch.length;
+          continue;
+        }
 
-    const results = JSON.parse(raw.slice(jsonStart, jsonEnd + 1));
+        const batchResults = JSON.parse(raw.slice(jsonStart, jsonEnd + 1));
+        allResults.push(...batchResults);
+        console.log(`Batch ${i + 1}-${i + batch.length}: processed ${batchResults.length} resumes`);
+      } catch (err) {
+        console.warn(`Batch ${i}-${i + BATCH_SIZE} failed:`, err.message);
+        failed += batch.length;
+        // skip bad batch, continue with rest
+      }
+    }
+
+    if (allResults.length === 0) {
+      await BulkSession.findByIdAndUpdate(session._id, { status: "failed", totalFailed: failed });
+      return res.status(400).json({ success: false, message: "AI could not screen any resumes" });
+    }
+
+    // Sort by score descending
+    allResults.sort((a, b) => (b.scores?.total || 0) - (a.scores?.total || 0));
 
     // Save candidates
     const candidates = await BulkCandidate.insertMany(
-      results.map((r, i) => ({
+      allResults.map((r, i) => ({
         session:                  session._id,
         rank:                     i + 1,
         fileName:                 r.fileName || "",
