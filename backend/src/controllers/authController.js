@@ -58,7 +58,7 @@ export const register = async (req, res) => {
 // ── POST /api/auth/login ──────────────────────────────────────────────────────
 export const login = async (req, res) => {
   try {
-    const { email, password, role, companyId, adminKey } = req.body;
+    const { email, password, role, adminKey } = req.body;
 
     // Fetch user WITH password hash
     const user = await User.findOne({ email, role }).select("+passwordHash +adminKeyHash");
@@ -75,7 +75,6 @@ export const login = async (req, res) => {
     if (!passwordOk) {
       return res.status(401).json({ success: false, message: "Invalid credentials" });
     }
-
 
     // Admin: verify admin key (required)
     if (role === "admin") {

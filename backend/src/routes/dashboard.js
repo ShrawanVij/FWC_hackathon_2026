@@ -1,7 +1,6 @@
 import { Router } from "express";
 import multer from "multer";
 import { protect, restrictTo } from "../middleware/auth.js";
-import { bulkScreen } from "../controllers/bulkScreenController.js";
 import { createSession, getSessions, getSession, getCandidates, updateCandidateStatus, exportSession } from "../controllers/bulkScreeningController.js";
 
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } });
@@ -46,10 +45,6 @@ router.post("/ai/mock-interview/evaluate",  protect, restrictTo("candidate"), ev
 router.post("/ai/profile-review",           protect, restrictTo("candidate"), reviewProfile);
 router.post("/ai/interview-questions/:id",  protect, restrictTo("candidate"), generateInterviewQuestions);
 router.post("/ai/evaluate-interview/:id",   protect, restrictTo("hr"),        evaluateInterview);
-
-// ── Bulk Resume Screening ─────────────────────────────────────────────────────
-router.post("/hr/bulk-screen", protect, restrictTo("hr"), upload.single("zipFile"), bulkScreen);
-
 
 // ── Admin ─────────────────────────────────────────────────────────────────────
 router.get("/admin/users",            protect, restrictTo("admin"), getAllUsers);

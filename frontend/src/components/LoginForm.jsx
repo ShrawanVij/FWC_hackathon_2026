@@ -33,13 +33,13 @@ const roleConfig = {
     accent: "var(--admin-accent)",
     loginTitle: "Admin Console",
     loginSubtitle: "Restricted — authorized access only",
-    registerTitle: "Admin Console",
-    registerSubtitle: "Restricted — authorized access only",
+    registerTitle: "Create Admin Account",
+    registerSubtitle: "Set your admin key to secure this account",
     emailLabel: "Admin Email",
     extraField: { label: "Admin Key", icon: <Key size={16} />, key: "adminKey", autocomplete: "off" },
     loginBtn: "Enter Console",
-    registerBtn: "Enter Console",
-    showRegister: false,
+    registerBtn: "Create Admin Account",
+    showRegister: true,
   },
 };
 

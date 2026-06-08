@@ -24,10 +24,6 @@ export const registerRules = [
   body("role")
     .isIn(["candidate", "hr", "admin"])
     .withMessage("Role must be candidate, hr, or admin"),
-  // HR
-  body("companyId")
-    .if(body("role").equals("hr"))
-    .notEmpty().withMessage("Company ID is required for HR"),
   // Admin
   body("adminKey")
     .if(body("role").equals("admin"))

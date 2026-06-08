@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 
-const SECRET = process.env.JWT_SECRET || "talentos_fallback_secret_2024";
+const SECRET = process.env.JWT_SECRET;
 
 export const signToken = (payload) =>
   jwt.sign(payload, SECRET, {
