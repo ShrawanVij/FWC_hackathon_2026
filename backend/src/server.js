@@ -6,9 +6,11 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/auth.js";
 import dashboardRoutes from "./routes/dashboard.js";
 
-if (!process.env.JWT_SECRET) {
-  console.error("FATAL: JWT_SECRET is not set. Exiting.");
-  process.exit(1);
+for (const key of ["MONGO_URI", "JWT_SECRET", "GROQ_API_KEY"]) {
+  if (!process.env[key]) {
+    console.error(`FATAL: ${key} is not set. Exiting.`);
+    process.exit(1);
+  }
 }
 
 const app = express();
