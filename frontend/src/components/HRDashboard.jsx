@@ -80,11 +80,13 @@ function PostJob({ onPosted }) {
   const [form, setForm] = useState({ title: "", company: user?.companyId || "", description: "", skills: "", requirements: "", location: "Remote", salaryRange: "", type: "full-time" });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [err, setErr] = useState("");
+  const showErr = (msg) => { setErr(msg); setTimeout(() => setErr(""), 4000); };
 
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   const submit = async () => {
-    if (!form.title || !form.description) { alert("Title and description are required"); return; }
+    if (!form.title || !form.description) { showErr("Title and description are required"); return; }
     setLoading(true);
     try {
       await jobsAPI.create({
@@ -94,7 +96,7 @@ function PostJob({ onPosted }) {
       });
       setSuccess(true);
       onPosted?.();
-    } catch (e) { alert(e.message); }
+    } catch (e) { showErr(e.message); }
     finally { setLoading(false); }
   };
 
@@ -131,6 +133,7 @@ function PostJob({ onPosted }) {
             </select>
           </div>
         </div>
+        {err && <div style={{ background: "var(--color-error-bg)", color: "var(--color-error)", padding: "8px 12px", borderRadius: 6, fontSize: 13, marginTop: 10 }}>{err}</div>}
         <button className={styles.primaryBtn} onClick={submit} disabled={loading}>{loading ? "Posting…" : "Post Job"}</button>
       </div>
     </div>
@@ -279,15 +282,35 @@ function CandidateModal({ applicant, onClose }) {
 function Candidates({ jobs }) {
   const [search, setSearch] = useState("");
   const [selected, setSelected] = useState(null);
+  const [statusOverrides, setStatusOverrides] = useState({});
+  const [statusUpdating, setStatusUpdating] = useState(null);
+  const [err, setErr] = useState("");
+  const showErr = (msg) => { setErr(msg); setTimeout(() => setErr(""), 4000); };
+
   const all = jobs.flatMap((j) =>
     j.applicants.map((a) => ({ ...a, jobTitle: j.title, jobId: j._id }))
   );
   const filtered = all.filter((a) =>
     (a.candidate?.fullName || a.candidate?.email || "").toLowerCase().includes(search.toLowerCase())
   );
+
+  const getStatus = (a) => statusOverrides[`${a.jobId}-${a.candidate?._id}`] ?? a.status;
+
+  const updateStatus = async (e, a, newStatus) => {
+    e.stopPropagation();
+    const key = `${a.jobId}-${a.candidate?._id}`;
+    setStatusUpdating(key);
+    try {
+      await jobsAPI.updateApplicantStatus(a.jobId, a.candidate._id, newStatus);
+      setStatusOverrides((prev) => ({ ...prev, [key]: newStatus }));
+    } catch (err) { showErr(err.message); }
+    finally { setStatusUpdating(null); }
+  };
+
   return (
     <div className={styles.section}>
       {selected && <CandidateModal applicant={selected} onClose={() => setSelected(null)} />}
+      {err && <div style={{ background: "var(--color-error-bg)", color: "var(--color-error)", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 12 }}>{err}</div>}
       <div className={styles.searchBar}>
         <Search size={15} />
         <input className={styles.searchInput} placeholder="Search candidates…" value={search} onChange={(e) => setSearch(e.target.value)} />
@@ -307,26 +330,41 @@ function Candidates({ jobs }) {
             </tr>
           </thead>
           <tbody>
-            {filtered.map((a, i) => (
-              <tr key={i} className={styles.clickableRow} onClick={() => setSelected(a)}>
-                <td className={styles.bold}>{a.candidate?.fullName || "—"}</td>
-                <td style={{ fontSize: 12, color: "var(--text-muted)" }}>{a.candidate?.email}</td>
-                <td>{a.jobTitle}</td>
-                <td>
-                  <div className={styles.skillTags}>
-                    {a.candidate?.skills?.slice(0, 3).map((s) => <span key={s} className={styles.skillTag}>{s}</span>)}
-                  </div>
-                </td>
-                <td><span className={`${styles.badge} ${styles[a.status]}`}>{a.status}</span></td>
-                <td>{a.aiScore != null ? <span className={styles.aiScore}>{a.aiScore}</span> : <span style={{ color: "var(--text-muted)" }}>—</span>}</td>
-                <td>{a.candidate?.resumeUrl ? <a href={a.candidate.resumeUrl} target="_blank" rel="noreferrer" className={styles.inlineBtn} onClick={(e) => e.stopPropagation()}>View <ExternalLink size={10}/></a> : "—"}</td>
-                <td>
-                  <button className={styles.viewAnalysisBtn} style={{ display: "inline-flex", alignItems: "center", gap: 4 }} onClick={(e) => { e.stopPropagation(); setSelected(a); }}>
-                    <Eye size={12} /> Details
-                  </button>
-                </td>
-              </tr>
-            ))}
+            {filtered.map((a, i) => {
+              const key = `${a.jobId}-${a.candidate?._id}`;
+              const status = getStatus(a);
+              return (
+                <tr key={i} className={styles.clickableRow} onClick={() => setSelected(a)}>
+                  <td className={styles.bold}>{a.candidate?.fullName || "—"}</td>
+                  <td style={{ fontSize: 12, color: "var(--text-muted)" }}>{a.candidate?.email}</td>
+                  <td>{a.jobTitle}</td>
+                  <td>
+                    <div className={styles.skillTags}>
+                      {a.candidate?.skills?.slice(0, 3).map((s) => <span key={s} className={styles.skillTag}>{s}</span>)}
+                    </div>
+                  </td>
+                  <td onClick={(e) => e.stopPropagation()}>
+                    <select
+                      value={status}
+                      disabled={statusUpdating === key}
+                      onChange={(e) => updateStatus(e, a, e.target.value)}
+                      style={{ fontSize: 12, padding: "3px 6px", borderRadius: 6, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text-primary)", cursor: "pointer" }}
+                    >
+                      {["applied","reviewed","shortlisted","rejected","hired"].map((s) => (
+                        <option key={s} value={s}>{s}</option>
+                      ))}
+                    </select>
+                  </td>
+                  <td>{a.aiScore != null ? <span className={styles.aiScore}>{a.aiScore}</span> : <span style={{ color: "var(--text-muted)" }}>—</span>}</td>
+                  <td>{a.candidate?.resumeUrl ? <a href={a.candidate.resumeUrl} target="_blank" rel="noreferrer" className={styles.inlineBtn} onClick={(e) => e.stopPropagation()}>View <ExternalLink size={10}/></a> : "—"}</td>
+                  <td>
+                    <button className={styles.viewAnalysisBtn} style={{ display: "inline-flex", alignItems: "center", gap: 4 }} onClick={(e) => { e.stopPropagation(); setSelected(a); }}>
+                      <Eye size={12} /> Details
+                    </button>
+                  </td>
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         {filtered.length === 0 && <p className={styles.empty}>No candidates found.</p>}
@@ -340,6 +378,8 @@ function ScheduleInterview({ jobs, onScheduled }) {
   const [form, setForm] = useState({ candidateId: "", jobId: "", scheduledAt: "", mode: "online", meetLink: "", notes: "" });
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const [err, setErr] = useState("");
+  const showErr = (msg) => { setErr(msg); setTimeout(() => setErr(""), 4000); };
   const set = (k, v) => setForm((f) => ({ ...f, [k]: v }));
 
   const candidatesForJob = (jobId) => {
@@ -348,13 +388,13 @@ function ScheduleInterview({ jobs, onScheduled }) {
   };
 
   const submit = async () => {
-    if (!form.candidateId || !form.jobId || !form.scheduledAt) { alert("Candidate, job, and date are required"); return; }
+    if (!form.candidateId || !form.jobId || !form.scheduledAt) { showErr("Candidate, job, and date are required"); return; }
     setLoading(true);
     try {
       await interviewAPI.schedule({ candidateId: form.candidateId, jobId: form.jobId, scheduledAt: form.scheduledAt, mode: form.mode, meetLink: form.meetLink, notes: form.notes });
       setSuccess(true);
       onScheduled?.();
-    } catch (e) { alert(e.message); }
+    } catch (e) { showErr(e.message); }
     finally { setLoading(false); }
   };
 
@@ -402,6 +442,7 @@ function ScheduleInterview({ jobs, onScheduled }) {
         </div>
         <div className={styles.formGroup}><label className={styles.label}>Meet Link (optional)</label><input className={styles.input} value={form.meetLink} onChange={(e) => set("meetLink", e.target.value)} placeholder="https://meet.google.com/..." /></div>
         <div className={styles.formGroup}><label className={styles.label}>Notes (optional)</label><textarea className={styles.textarea} rows={3} value={form.notes} onChange={(e) => set("notes", e.target.value)} placeholder="Interview agenda or instructions..." /></div>
+        {err && <div style={{ background: "var(--color-error-bg)", color: "var(--color-error)", padding: "8px 12px", borderRadius: 6, fontSize: 13, marginBottom: 10 }}>{err}</div>}
         <button className={styles.primaryBtn} onClick={submit} disabled={loading}>{loading ? "Scheduling…" : "Schedule Interview"}</button>
       </div>
     </div>
@@ -411,23 +452,26 @@ function ScheduleInterview({ jobs, onScheduled }) {
 // ── HR Interviews List ────────────────────────────────────────────────────────
 function HRInterviews({ interviews, onRefresh }) {
   const [evaluating, setEvaluating] = useState(null);
+  const [err, setErr] = useState("");
+  const showErr = (msg) => { setErr(msg); setTimeout(() => setErr(""), 4000); };
   const recColor = { hire: "var(--color-success)", consider: "var(--color-warning)", pass: "var(--color-error)" };
 
   const updateStatus = async (id, status) => {
     try { await interviewAPI.updateStatus(id, status); onRefresh(); }
-    catch (e) { alert(e.message); }
+    catch (e) { showErr(e.message); }
   };
 
   const evaluate = async (id) => {
     setEvaluating(id);
     try { await aiAPI.evaluateInterview(id); onRefresh(); }
-    catch (e) { alert(e.message); }
+    catch (e) { showErr(e.message); }
     finally { setEvaluating(null); }
   };
 
   return (
     <div className={styles.section}>
       <h2 className={styles.sectionTitle}>Scheduled Interviews</h2>
+      {err && <div style={{ background: "var(--color-error-bg)", color: "var(--color-error)", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 12 }}>{err}</div>}
       {interviews.length === 0
         ? <p className={styles.empty}>No interviews scheduled yet.</p>
         : interviews.map((iv) => (
@@ -480,16 +524,18 @@ function AIRanking({ jobs }) {
   const [topN, setTopN] = useState("");
   const [loading, setLoading] = useState(false);
   const [rankings, setRankings] = useState(null);
+  const [err, setErr] = useState("");
+  const showErr = (msg) => { setErr(msg); setTimeout(() => setErr(""), 4000); };
 
   const scoreColor = (s) => (s ?? 0) >= 80 ? "#22c55e" : (s ?? 0) >= 60 ? "#f59e0b" : "#ef4444";
 
   const run = async () => {
-    if (!selectedJob) { alert("Select a job first"); return; }
+    if (!selectedJob) { showErr("Select a job first"); return; }
     setLoading(true);
     try {
       const d = await aiAPI.rankCandidates(selectedJob, topN ? parseInt(topN) : undefined);
       setRankings(d.rankings);
-    } catch (e) { alert(e.message); }
+    } catch (e) { showErr(e.message); }
     finally { setLoading(false); }
   };
 
@@ -538,6 +584,7 @@ function AIRanking({ jobs }) {
 
   return (
     <div className={styles.section}>
+      {err && <div style={{ background: "var(--color-error-bg)", color: "var(--color-error)", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 12 }}>{err}</div>}
       <div className={styles.card}>
         <h2 className={styles.sectionTitle} style={{ marginBottom: 16 }}>AI Resume Screening</h2>
         <p className={styles.cardSub}>Select a job and run AI analysis to rank all applicants across 14 professional dimensions.</p>
@@ -757,7 +804,8 @@ function HROnboarding() {
   const [data, setData]         = useState(null);
   const [loading, setLoading]   = useState(true);
   const [selected, setSelected] = useState(null);
-  const [generating, setGenerating] = useState(null); // candidateId being generated
+  const [generating, setGenerating] = useState(null);
+  const [err, setErr] = useState("");
 
   const fetchData = () => {
     setLoading(true);
@@ -774,9 +822,10 @@ function HROnboarding() {
     setGenerating(candidateId);
     try {
       await hrAPI.generateOnboarding(candidateId);
-      fetchData(); // refresh both lists
+      fetchData();
     } catch (err) {
-      alert(err.message || "Failed to generate plan");
+      setErr(err.message || "Failed to generate plan");
+      setTimeout(() => setErr(""), 4000);
     } finally {
       setGenerating(null);
     }
@@ -790,6 +839,7 @@ function HROnboarding() {
   return (
     <div className={styles.section}>
       {selected && <OnboardingDetailModal candidate={selected} onClose={() => setSelected(null)} />}
+      {err && <div style={{ background: "var(--color-error-bg)", color: "var(--color-error)", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 12 }}>{err}</div>}
       <h2 className={styles.sectionTitle}>Onboarding Pipeline</h2>
 
       {/* Ready to Onboard — shortlisted/hired, no plan yet */}
@@ -905,9 +955,9 @@ export default function HRDashboard() {
   useEffect(() => { fetchJobs(); fetchInterviews(); }, []);
 
   const deleteJob = async (id) => {
-    if (!confirm("Remove this job listing?")) return;
+    if (!window.confirm("Remove this job listing?")) return;
     try { await jobsAPI.delete(id); setJobs((j) => j.filter((x) => x._id !== id)); }
-    catch (e) { alert(e.message); }
+    catch (e) { console.error("Delete job failed:", e.message); }
   };
 
   return (

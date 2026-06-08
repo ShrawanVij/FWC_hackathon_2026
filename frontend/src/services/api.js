@@ -26,12 +26,13 @@ export const authAPI = {
 };
 
 export const jobsAPI = {
-  getAll:     ()   => request("/jobs"),
-  getMy:      ()   => request("/jobs/my"),
-  getApplied: ()   => request("/jobs/applied"),
-  create:     (p)  => request("/jobs",            { method: "POST",   body: JSON.stringify(p) }),
-  delete:     (id) => request(`/jobs/${id}`,       { method: "DELETE" }),
-  apply:      (id) => request(`/jobs/${id}/apply`, { method: "POST"   }),
+  getAll:               ()                          => request("/jobs"),
+  getMy:                ()                          => request("/jobs/my"),
+  getApplied:           ()                          => request("/jobs/applied"),
+  create:               (p)                         => request("/jobs",            { method: "POST",   body: JSON.stringify(p) }),
+  delete:               (id)                        => request(`/jobs/${id}`,       { method: "DELETE" }),
+  apply:                (id)                        => request(`/jobs/${id}/apply`, { method: "POST"   }),
+  updateApplicantStatus:(jobId, candidateId, status) => request(`/jobs/${jobId}/applicants/${candidateId}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
 };
 
 export const candidateAPI = {

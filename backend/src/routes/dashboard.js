@@ -6,7 +6,7 @@ import { createSession, getSessions, getSession, getCandidates, updateCandidateS
 const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 100 * 1024 * 1024 } });
 import {
   getAllJobs, getMyJobs, createJob, deleteJob,
-  applyToJob, getAppliedJobs, adminGetAllJobs, toggleJobStatus,
+  applyToJob, getAppliedJobs, adminGetAllJobs, toggleJobStatus, updateApplicantStatus,
 } from "../controllers/jobController.js";
 import { rankCandidates, startMockInterview, evaluateMockInterview, reviewProfile, generateInterviewQuestions, evaluateInterview } from "../controllers/aiController.js";
 import { updateProfile, getProfile, getOnboarding, getHROnboarding, generateOnboardingPlan, submitOnboardingDoc, deleteOnboardingDoc } from "../controllers/candidateController.js";
@@ -22,6 +22,7 @@ router.get("/jobs/applied",   protect, restrictTo("candidate"), getAppliedJobs);
 router.post("/jobs",          protect, restrictTo("hr"), createJob);
 router.delete("/jobs/:id",    protect, restrictTo("hr"), deleteJob);
 router.post("/jobs/:id/apply",protect, restrictTo("candidate"), applyToJob);
+router.patch("/jobs/:jobId/applicants/:candidateId/status", protect, restrictTo("hr"), updateApplicantStatus);
 
 // ── Candidate ─────────────────────────────────────────────────────────────────
 router.get("/candidate/profile",    protect, restrictTo("candidate"), getProfile);

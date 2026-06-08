@@ -128,3 +128,22 @@ export const toggleJobStatus = async (req, res) => {
     res.status(500).json({ success: false, message: err.message });
   }
 };
+
+// PATCH /api/jobs/:jobId/applicants/:candidateId/status — HR: update applicant status
+export const updateApplicantStatus = async (req, res) => {
+  try {
+    const { status } = req.body;
+    const allowed = ["reviewed", "shortlisted", "rejected", "hired"];
+    if (!allowed.includes(status))
+      return res.status(400).json({ success: false, message: "Invalid status" });
+    const job = await Job.findOneAndUpdate(
+      { _id: req.params.jobId, postedBy: req.user._id, "applicants.candidate": req.params.candidateId },
+      { $set: { "applicants.$.status": status } },
+      { new: true }
+    );
+    if (!job) return res.status(404).json({ success: false, message: "Job or applicant not found" });
+    res.json({ success: true, message: "Status updated" });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

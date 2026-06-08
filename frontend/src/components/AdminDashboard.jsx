@@ -107,6 +107,10 @@ function ManageUsers() {
   const [resetModal, setResetModal] = useState(null);
   const [newPassword, setNewPassword] = useState("");
   const [resetting, setResetting] = useState(false);
+  const [err, setErr] = useState("");
+  const [successMsg, setSuccessMsg] = useState("");
+  const showErr = (msg) => { setErr(msg); setTimeout(() => setErr(""), 4000); };
+  const showSuccess = (msg) => { setSuccessMsg(msg); setTimeout(() => setSuccessMsg(""), 4000); };
 
   const fetchUsers = async (role = "") => {
     setLoading(true);
@@ -114,21 +118,21 @@ function ManageUsers() {
       const params = role && role !== "all" ? `?role=${role}` : "";
       const d = await adminAPI.getUsers(params);
       setUsers(d.users);
-    } catch (e) { alert(e.message); }
+    } catch (e) { showErr(e.message); }
     finally { setLoading(false); }
   };
 
   useEffect(() => { fetchUsers(filter); }, [filter]);
 
   const handleResetPassword = async () => {
-    if (!newPassword || newPassword.length < 6) return alert("Password must be at least 6 characters");
+    if (!newPassword || newPassword.length < 6) { showErr("Password must be at least 6 characters"); return; }
     setResetting(true);
     try {
       const d = await adminAPI.resetPassword(resetModal.id, newPassword);
-      alert(d.message);
+      showSuccess(d.message);
       setResetModal(null);
       setNewPassword("");
-    } catch (e) { alert(e.message); }
+    } catch (e) { showErr(e.message); }
     finally { setResetting(false); }
   };
 
@@ -137,7 +141,7 @@ function ManageUsers() {
     try {
       const d = await adminAPI.toggleUser(id);
       setUsers((prev) => prev.map((u) => u._id === id ? { ...u, isActive: d.user.isActive } : u));
-    } catch (e) { alert(e.message); }
+    } catch (e) { showErr(e.message); }
     finally { setToggling(null); }
   };
 
@@ -150,6 +154,8 @@ function ManageUsers() {
 
   return (
     <div className={styles.section}>
+      {err && <div style={{ background: "var(--color-error-bg)", color: "var(--color-error)", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 12 }}>{err}</div>}
+      {successMsg && <div style={{ background: "var(--color-success-bg)", color: "var(--color-success)", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 12 }}>{successMsg}</div>}
       <div className={styles.toolbar}>
         <div className={styles.searchBar}>
           <Search size={15} />
@@ -282,12 +288,15 @@ function AllJobs() {
   const [search, setSearch]     = useState("");
   const [toggling, setToggling] = useState(null);
 
+  const [err, setErr] = useState("");
+  const showErr = (msg) => { setErr(msg); setTimeout(() => setErr(""), 4000); };
+
   const fetchJobs = async () => {
     setLoading(true);
     try {
       const d = await adminAPI.getAllJobs();
       setJobs(d.jobs);
-    } catch (e) { alert(e.message); }
+    } catch (e) { showErr(e.message); }
     finally { setLoading(false); }
   };
 
@@ -298,7 +307,7 @@ function AllJobs() {
     try {
       const d = await adminAPI.toggleJob(id);
       setJobs((prev) => prev.map((j) => j._id === id ? { ...j, isActive: d.job.isActive } : j));
-    } catch (e) { alert(e.message); }
+    } catch (e) { showErr(e.message); }
     finally { setToggling(null); }
   };
 
@@ -309,6 +318,7 @@ function AllJobs() {
 
   return (
     <div className={styles.section}>
+      {err && <div style={{ background: "var(--color-error-bg)", color: "var(--color-error)", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 12 }}>{err}</div>}
       <div className={styles.toolbar}>
         <div className={styles.searchBar}>
           <Search size={15} />
@@ -520,6 +530,7 @@ function WorkforceIntelligence() {
   const [loading, setLoading]             = useState(true);
   const [report, setReport]               = useState(null);
   const [reportLoading, setReportLoading] = useState(false);
+  const [reportErr, setReportErr]         = useState("");
 
   useEffect(() => {
     adminAPI.getWorkforce()
@@ -533,7 +544,7 @@ function WorkforceIntelligence() {
     try {
       const d = await adminAPI.getAIInsights(data);
       setReport(d.report);
-    } catch (e) { alert(e.message); }
+    } catch (e) { setReportErr(e.message); setTimeout(() => setReportErr(""), 4000); }
     finally { setReportLoading(false); }
   };
 
@@ -703,6 +714,7 @@ function WorkforceIntelligence() {
             <Sparkles size={14} /> {reportLoading ? "Generating..." : "Generate Report"}
           </button>
         </div>
+        {reportErr && <div style={{ background: "var(--color-error-bg)", color: "var(--color-error)", padding: "8px 12px", borderRadius: 6, fontSize: 13, marginTop: 8 }}>{reportErr}</div>}
         {!report ? (
           <p className={styles.empty} style={{ marginTop: 12 }}>Generate an AI-powered executive summary of your workforce data.</p>
         ) : (

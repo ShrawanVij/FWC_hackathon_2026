@@ -333,6 +333,14 @@ Return ONLY valid JSON (no markdown):
     interview.recommendation     = evaluation.recommendation;
     await interview.save();
 
+    // Set applicant status to "hired" in Job when AI recommends hire
+    if (evaluation.recommendation === "hire") {
+      await Job.updateOne(
+        { _id: interview.job._id, "applicants.candidate": interview.candidate._id },
+        { $set: { "applicants.$.status": "hired" } }
+      );
+    }
+
     // Auto-generate onboarding plan for hire or consider recommendations
     let onboardingGenerated = false;
     if (["hire", "consider"].includes(evaluation.recommendation)) {

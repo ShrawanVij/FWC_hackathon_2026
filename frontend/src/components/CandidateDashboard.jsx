@@ -28,11 +28,12 @@ function StatCard({ iconEl, label, value, color }) {
 function Overview({ user, appliedJobs, interviews, onTabChange }) {
   const [profileReview, setProfileReview] = useState(null);
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewErr, setReviewErr] = useState("");
 
   const runReview = async () => {
     setReviewLoading(true);
     try { const d = await aiAPI.reviewProfile(); setProfileReview(d.review); }
-    catch (e) { alert(e.message); }
+    catch (e) { setReviewErr(e.message); setTimeout(() => setReviewErr(""), 4000); }
     finally { setReviewLoading(false); }
   };
 
@@ -86,6 +87,7 @@ function Overview({ user, appliedJobs, interviews, onTabChange }) {
           ) : (
             <div className={styles.aiPrompt}>
               <p>Get AI-powered feedback on your profile to stand out to recruiters.</p>
+              {reviewErr && <div style={{ color: "var(--color-error)", fontSize: 12, marginBottom: 8 }}>{reviewErr}</div>}
               <button className={styles.aiBtn} onClick={runReview} disabled={reviewLoading}>
                 <Sparkles size={14} /> {reviewLoading ? "Analyzing..." : "Analyze My Profile"}
               </button>
@@ -103,19 +105,23 @@ function BrowseJobs({ appliedJobIds, onApply }) {
   const [loading, setLoading] = useState(true);
   const [applying, setApplying] = useState(null);
   const [search, setSearch] = useState("");
+  const [msg, setMsg] = useState({ text: "", type: "" });
+  const showMsg = (text, type = "error") => { setMsg({ text, type }); setTimeout(() => setMsg({ text: "", type: "" }), 4000); };
 
   useEffect(() => {
     jobsAPI.getAll().then((d) => setJobs(d.jobs)).finally(() => setLoading(false));
   }, []);
 
   const apply = async (id) => {
+    const job = jobs.find((j) => j._id === id);
+    if (!window.confirm(`Apply to ${job?.title} at ${job?.company}?`)) return;
     setApplying(id);
     try {
       await jobsAPI.apply(id);
-      alert("Applied successfully!");
+      showMsg("Applied successfully!", "success");
       onApply?.();
     }
-    catch (e) { alert(e.message); }
+    catch (e) { showMsg(e.message); }
     finally { setApplying(null); }
   };
 
@@ -125,6 +131,11 @@ function BrowseJobs({ appliedJobIds, onApply }) {
 
   return (
     <div className={styles.section}>
+      {msg.text && (
+        <div style={{ background: msg.type === "success" ? "var(--color-success-bg)" : "var(--color-error-bg)", color: msg.type === "success" ? "var(--color-success)" : "var(--color-error)", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 12 }}>
+          {msg.text}
+        </div>
+      )}
       <div className={styles.searchBar}>
         <Search size={15} />
         <input placeholder="Search jobs or companies..." value={search} onChange={(e) => setSearch(e.target.value)} className={styles.searchInput} />
@@ -212,9 +223,11 @@ function MockInterview() {
   const [current, setCurrent] = useState(0);
   const [evaluation, setEvaluation] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [err, setErr] = useState("");
+  const showErr = (msg) => { setErr(msg); setTimeout(() => setErr(""), 4000); };
 
   const start = async () => {
-    if (!jobTitle) { alert("Enter a job title"); return; }
+    if (!jobTitle) { showErr("Enter a job title"); return; }
     setLoading(true);
     try {
       const d = await aiAPI.startMockInterview({ jobTitle, skills });
@@ -222,7 +235,7 @@ function MockInterview() {
       setAnswers(new Array(d.questions.length).fill(""));
       setCurrent(0);
       setStep("interview");
-    } catch (e) { alert(e.message); }
+    } catch (e) { showErr(e.message); }
     finally { setLoading(false); }
   };
 
@@ -232,7 +245,7 @@ function MockInterview() {
       const d = await aiAPI.evaluateMockInterview({ jobTitle, questions, answers });
       setEvaluation(d.evaluation);
       setStep("results");
-    } catch (e) { alert(e.message); }
+    } catch (e) { showErr(e.message); }
     finally { setLoading(false); }
   };
 
@@ -240,6 +253,7 @@ function MockInterview() {
 
   return (
     <div className={styles.section}>
+      {err && <div style={{ background: "var(--color-error-bg)", color: "var(--color-error)", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 12 }}>{err}</div>}
       {step === "setup" && (
         <div className={styles.card} style={{ maxWidth: 560 }}>
           <h2 className={styles.cardTitle}>AI Mock Interview</h2>
@@ -326,11 +340,13 @@ function InterviewTab({ interviews, onRefresh }) {
   const [generatingFor, setGeneratingFor] = useState(null);
   const [submittingFor, setSubmittingFor] = useState(null);
   const [draftAnswers, setDraftAnswers]   = useState({});
+  const [err, setErr] = useState("");
+  const showErr = (msg) => { setErr(msg); setTimeout(() => setErr(""), 4000); };
 
   const generateQuestions = async (id) => {
     setGeneratingFor(id);
     try { await aiAPI.generateInterviewQuestions(id); onRefresh(); }
-    catch (e) { alert(e.message); }
+    catch (e) { showErr(e.message); }
     finally { setGeneratingFor(null); }
   };
 
@@ -338,7 +354,7 @@ function InterviewTab({ interviews, onRefresh }) {
     const answers = draftAnswers[id] || new Array(questionCount).fill("");
     setSubmittingFor(id);
     try { await interviewAPI.submitAnswers(id, answers); onRefresh(); }
-    catch (e) { alert(e.message); }
+    catch (e) { showErr(e.message); }
     finally { setSubmittingFor(null); }
   };
 
@@ -355,6 +371,7 @@ function InterviewTab({ interviews, onRefresh }) {
   return (
     <div className={styles.section}>
       <h2 className={styles.sectionTitle}>My Scheduled Interviews</h2>
+      {err && <div style={{ background: "var(--color-error-bg)", color: "var(--color-error)", padding: "10px 14px", borderRadius: 8, fontSize: 13, marginBottom: 12 }}>{err}</div>}
 
       {interviews.length === 0 ? (
         <p className={styles.empty}>No interviews scheduled yet.</p>
@@ -467,21 +484,24 @@ function OnboardingTab() {
 
   useEffect(() => { refresh(); }, []);
 
+  const [docErr, setDocErr] = useState("");
+  const showDocErr = (msg) => { setDocErr(msg); setTimeout(() => setDocErr(""), 4000); };
+
   const submitDoc = async () => {
-    if (!docName.trim() || !docUrl.trim()) { alert("Both name and URL are required"); return; }
+    if (!docName.trim() || !docUrl.trim()) { showDocErr("Both name and URL are required"); return; }
     setDocSaving(true);
     try {
       const d = await candidateAPI.submitDoc({ name: docName.trim(), url: docUrl.trim() });
       setDocs(d.docs);
       setDocName(""); setDocUrl("");
-    } catch (e) { alert(e.message); }
+    } catch (e) { showDocErr(e.message); }
     finally { setDocSaving(false); }
   };
 
   const removeDoc = async (docId) => {
-    if (!confirm("Remove this document?")) return;
+    if (!window.confirm("Remove this document?")) return;
     try { const d = await candidateAPI.deleteDoc(docId); setDocs(d.docs); }
-    catch (e) { alert(e.message); }
+    catch (e) { showDocErr(e.message); }
   };
 
   if (loading) return <div className={styles.section}><div className={styles.loading}>Loading your onboarding plan...</div></div>;
@@ -549,6 +569,18 @@ function OnboardingTab() {
         </div>
       )}
 
+      {plan.week1Goals?.length > 0 && (
+        <div className={styles.card} style={{ marginBottom: 16 }}>
+          <div className={styles.cardTitle}>Week 1 Goals</div>
+          {plan.week1Goals.map((goal, i) => (
+            <div key={i} style={{ display: "flex", gap: 10, padding: "7px 0", borderBottom: "1px solid var(--border)", fontSize: 14, color: "var(--text-primary)", alignItems: "flex-start" }}>
+              <span style={{ color: "var(--cand-accent)", flexShrink: 0, marginTop: 2 }}><Target size={14} /></span>
+              <span>{goal}</span>
+            </div>
+          ))}
+        </div>
+      )}
+
       <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 12, marginBottom: 16 }}>
         {[["30-Day Goals", plan.day30Goals], ["60-Day Goals", plan.day60Goals], ["90-Day Goals", plan.day90Goals]].map(([label, goals]) =>
           goals?.length > 0 && (
@@ -606,6 +638,7 @@ function OnboardingTab() {
           Upload links to your documents (Google Drive, Dropbox, etc.). HR will be able to view them.
         </p>
 
+        {docErr && <div style={{ background: "var(--color-error-bg)", color: "var(--color-error)", padding: "8px 12px", borderRadius: 6, fontSize: 13, marginBottom: 10 }}>{docErr}</div>}
         <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 12 }}>
           <input
             className={styles.input}
@@ -655,6 +688,7 @@ function ProfileTab({ user, onUpdate }) {
   const [resumeText, setResumeText] = useState(user?.resumeText || "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [saveErr, setSaveErr] = useState("");
 
   const save = async () => {
     setSaving(true);
@@ -663,7 +697,7 @@ function ProfileTab({ user, onUpdate }) {
       onUpdate(d.user);
       setSaved(true);
       setTimeout(() => setSaved(false), 2000);
-    } catch (e) { alert(e.message); }
+    } catch (e) { setSaveErr(e.message); setTimeout(() => setSaveErr(""), 4000); }
     finally { setSaving(false); }
   };
 
@@ -703,6 +737,7 @@ function ProfileTab({ user, onUpdate }) {
           <input className={styles.input} value={resumeUrl} onChange={(e) => setResumeUrl(e.target.value)} placeholder="https://drive.google.com/..." />
           {resumeUrl && <a href={resumeUrl} target="_blank" rel="noreferrer" className={styles.inlineBtn}>View Resume <ExternalLink size={11}/></a>}
         </div>
+        {saveErr && <div style={{ background: "var(--color-error-bg)", color: "var(--color-error)", padding: "8px 12px", borderRadius: 6, fontSize: 13, marginBottom: 10 }}>{saveErr}</div>}
         <button className={styles.primaryBtn} onClick={save} disabled={saving}>
           {saved ? "Saved" : saving ? "Saving..." : "Save Profile"}
         </button>
