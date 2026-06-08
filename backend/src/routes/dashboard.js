@@ -9,7 +9,7 @@ import {
   applyToJob, getAppliedJobs, adminGetAllJobs, toggleJobStatus,
 } from "../controllers/jobController.js";
 import { rankCandidates, startMockInterview, evaluateMockInterview, reviewProfile, generateInterviewQuestions, evaluateInterview } from "../controllers/aiController.js";
-import { updateProfile, getProfile, getOnboarding, getHROnboarding, submitOnboardingDoc, deleteOnboardingDoc } from "../controllers/candidateController.js";
+import { updateProfile, getProfile, getOnboarding, getHROnboarding, generateOnboardingPlan, submitOnboardingDoc, deleteOnboardingDoc } from "../controllers/candidateController.js";
 import { scheduleInterview, getHRInterviews, getCandidateInterviews, updateInterviewStatus, submitAnswers } from "../controllers/interviewController.js";
 import { getAllUsers, toggleUserStatus, resetUserPassword, getAnalytics, getWorkforceAnalytics, getAIInsights } from "../controllers/adminController.js";
 
@@ -30,6 +30,7 @@ router.get("/candidate/onboarding",              protect, restrictTo("candidate"
 router.post("/candidate/onboarding/docs",        protect, restrictTo("candidate"), submitOnboardingDoc);
 router.delete("/candidate/onboarding/docs/:docId", protect, restrictTo("candidate"), deleteOnboardingDoc);
 router.get("/hr/onboarding",                     protect, restrictTo("hr"),        getHROnboarding);
+router.post("/hr/onboarding/generate/:candidateId", protect, restrictTo("hr"),     generateOnboardingPlan);
 
 // ── Interviews ────────────────────────────────────────────────────────────────
 router.post("/interviews",                protect, restrictTo("hr"),        scheduleInterview);

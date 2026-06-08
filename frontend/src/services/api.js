@@ -43,7 +43,8 @@ export const candidateAPI = {
 };
 
 export const hrAPI = {
-  getOnboarding: () => request("/hr/onboarding"),
+  getOnboarding:       ()            => request("/hr/onboarding"),
+  generateOnboarding:  (candidateId) => request(`/hr/onboarding/generate/${candidateId}`, { method: "POST" }),
   bulkScreen: (formData) => {
     const token = localStorage.getItem("talentos_token");
     if (!token) throw new Error("Not authenticated — please log in again");

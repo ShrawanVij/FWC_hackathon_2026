@@ -637,6 +637,7 @@ function AIRanking({ jobs }) {
 function OnboardingDetailModal({ candidate, onClose }) {
   const plan = candidate.onboardingPlan || {};
   const readinessColor = (candidate.roleReadinessScore ?? 0) >= 80 ? "var(--color-success)" : (candidate.roleReadinessScore ?? 0) >= 60 ? "var(--color-warning)" : "var(--color-error)";
+  const docs = candidate.onboardingDocs || [];
 
   const Section = ({ title, items }) =>
     items?.length > 0 ? (
@@ -652,7 +653,7 @@ function OnboardingDetailModal({ candidate, onClose }) {
     <div className={styles.modalOverlay} onClick={onClose}>
       <div className={styles.onboardingModal} onClick={(e) => e.stopPropagation()}>
 
-        {/* Fixed header — never scrolls */}
+        {/* Fixed header */}
         <div className={styles.obHeader}>
           <div className={styles.obHeaderLeft}>
             <div className={styles.obName}>{candidate.fullName || candidate.email}</div>
@@ -716,6 +717,35 @@ function OnboardingDetailModal({ candidate, onClose }) {
               </div>
             </div>
           )}
+
+          {/* Documents section */}
+          <div className={styles.obSection}>
+            <div className={styles.obSectionLabel}>Submitted Documents</div>
+            {docs.length === 0 ? (
+              <p style={{ fontSize: 13, color: "var(--text-muted)", margin: "8px 0 0" }}>No documents submitted yet.</p>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: 8, marginTop: 8 }}>
+                {docs.map((doc) => (
+                  <div key={doc._id} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, padding: "10px 14px", background: "var(--bg-elevated)", borderRadius: 8, border: "1px solid var(--border)" }}>
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ fontSize: 13, fontWeight: 600, color: "var(--text-primary)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{doc.name}</div>
+                      <div style={{ fontSize: 11, color: "var(--text-muted)", marginTop: 2 }}>
+                        Submitted {new Date(doc.submittedAt).toLocaleDateString()}
+                      </div>
+                    </div>
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12, fontWeight: 600, color: "var(--hr-accent)", whiteSpace: "nowrap", textDecoration: "none", flexShrink: 0 }}
+                    >
+                      <ExternalLink size={12} /> View
+                    </a>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
@@ -724,63 +754,140 @@ function OnboardingDetailModal({ candidate, onClose }) {
 
 // ── HR Onboarding ─────────────────────────────────────────────────────────────
 function HROnboarding() {
-  const [data, setData]       = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [data, setData]         = useState(null);
+  const [loading, setLoading]   = useState(true);
   const [selected, setSelected] = useState(null);
+  const [generating, setGenerating] = useState(null); // candidateId being generated
 
-  useEffect(() => {
+  const fetchData = () => {
+    setLoading(true);
     hrAPI.getOnboarding()
       .then((d) => setData(d))
-      .catch(() => setData({ candidates: [] }))
+      .catch(() => setData({ candidates: [], eligible: [] }))
       .finally(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const handleGenerate = async (e, candidateId) => {
+    e.stopPropagation();
+    setGenerating(candidateId);
+    try {
+      await hrAPI.generateOnboarding(candidateId);
+      fetchData(); // refresh both lists
+    } catch (err) {
+      alert(err.message || "Failed to generate plan");
+    } finally {
+      setGenerating(null);
+    }
+  };
 
   if (loading) return <div className={styles.section}><div className={styles.loading}>Loading onboarding data…</div></div>;
 
   const candidates = data?.candidates || [];
+  const eligible   = data?.eligible   || [];
 
   return (
     <div className={styles.section}>
       {selected && <OnboardingDetailModal candidate={selected} onClose={() => setSelected(null)} />}
       <h2 className={styles.sectionTitle}>Onboarding Pipeline</h2>
-      {candidates.length === 0
-        ? (
-          <div className={styles.card} style={{ textAlign: "center", padding: "48px 24px" }}>
-            <div style={{ color: "var(--text-muted)", display: "flex", justifyContent: "center", marginBottom: 12 }}><Rocket size={40} /></div>
-            <p style={{ fontSize: 13, color: "var(--text-muted)" }}>No candidates with onboarding plans yet. Evaluate interviews to generate personalized plans.</p>
+
+      {/* Ready to Onboard — shortlisted/hired, no plan yet */}
+      {eligible.length > 0 && (
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 12 }}>
+            Ready to Onboard ({eligible.length})
           </div>
-        )
-        : candidates.map((c) => {
-          const readinessColor = (c.roleReadinessScore ?? 0) >= 80 ? "var(--color-success)" : (c.roleReadinessScore ?? 0) >= 60 ? "var(--color-warning)" : "var(--color-error)";
-          return (
-            <div key={c._id} className={`${styles.card} ${styles.clickableRow}`} style={{ marginBottom: 12 }} onClick={() => setSelected(c)}>
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, flexWrap: "wrap" }}>
-                <div style={{ flex: 1, minWidth: 0 }}>
-                  <div className={styles.itemTitle}>{c.fullName || c.email}</div>
-                  <div className={styles.itemSub}>{c.email}</div>
-                  {c.onboardingPlan?.welcomeMessage && (
-                    <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 8, lineHeight: 1.6, marginBottom: 0 }}>{c.onboardingPlan.welcomeMessage}</p>
+          {eligible.map((c) => (
+            <div key={c._id} className={styles.card} style={{ marginBottom: 10, display: "flex", justifyContent: "space-between", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div className={styles.itemTitle}>{c.fullName || c.email}</div>
+                <div className={styles.itemSub}>{c.email}</div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 6, alignItems: "center" }}>
+                  {c.jobTitle && (
+                    <span className={styles.badge} style={{ background: "var(--hr-accent)14", color: "var(--hr-accent)", border: "1px solid var(--hr-accent)30" }}>
+                      {c.jobTitle}{c.jobCompany ? ` · ${c.jobCompany}` : ""}
+                    </span>
                   )}
-                  <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10 }}>
-                    {c.skills?.slice(0, 4).map((s) => <span key={s} className={styles.skillTag}>{s}</span>)}
-                  </div>
+                  <span className={`${styles.badge} ${styles.shortlisted}`}>{c.applicantStatus || "shortlisted"}</span>
+                  {c.onboardingDocs?.length > 0 && (
+                    <span className={styles.badge} style={{ background: "var(--color-info)14", color: "var(--color-info)", border: "1px solid var(--color-info)30" }}>
+                      {c.onboardingDocs.length} doc{c.onboardingDocs.length > 1 ? "s" : ""} uploaded
+                    </span>
+                  )}
                 </div>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexShrink: 0 }}>
-                  {c.roleReadinessScore != null && (
-                    <div style={{ textAlign: "center", minWidth: 72 }}>
-                      <div className={styles.scoreTag} style={{ color: readinessColor }}>{c.roleReadinessScore}</div>
-                      <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 3 }}>Readiness</div>
+                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginTop: 8 }}>
+                  {c.skills?.slice(0, 4).map((s) => <span key={s} className={styles.skillTag}>{s}</span>)}
+                </div>
+              </div>
+              <button
+                onClick={(e) => handleGenerate(e, c._id)}
+                disabled={generating === c._id}
+                style={{ display: "flex", alignItems: "center", gap: 6, padding: "8px 18px", borderRadius: 8, border: "none", background: "var(--hr-accent)", color: "#fff", fontSize: 13, fontWeight: 600, cursor: generating === c._id ? "not-allowed" : "pointer", opacity: generating === c._id ? 0.7 : 1, flexShrink: 0 }}
+              >
+                <Sparkles size={14} />
+                {generating === c._id ? "Generating…" : "Generate Plan"}
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Onboarding Plans — candidates with existing plans */}
+      {candidates.length > 0 && (
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 700, color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: ".08em", marginBottom: 12 }}>
+            Onboarding Plans ({candidates.length})
+          </div>
+          {candidates.map((c) => {
+            const readinessColor = (c.roleReadinessScore ?? 0) >= 80 ? "var(--color-success)" : (c.roleReadinessScore ?? 0) >= 60 ? "var(--color-warning)" : "var(--color-error)";
+            return (
+              <div key={c._id} className={`${styles.card} ${styles.clickableRow}`} style={{ marginBottom: 12 }} onClick={() => setSelected(c)}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 14, flexWrap: "wrap" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div className={styles.itemTitle}>{c.fullName || c.email}</div>
+                    <div className={styles.itemSub}>{c.email}</div>
+                    {c.onboardingJobId && (
+                      <div style={{ fontSize: 12, color: "var(--text-muted)", marginTop: 4 }}>
+                        {c.onboardingJobId.title}{c.onboardingJobId.company ? ` · ${c.onboardingJobId.company}` : ""}
+                      </div>
+                    )}
+                    {c.onboardingPlan?.welcomeMessage && (
+                      <p style={{ fontSize: 13, color: "var(--text-secondary)", marginTop: 8, lineHeight: 1.6, marginBottom: 0 }}>{c.onboardingPlan.welcomeMessage}</p>
+                    )}
+                    <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 10, alignItems: "center" }}>
+                      {c.skills?.slice(0, 4).map((s) => <span key={s} className={styles.skillTag}>{s}</span>)}
+                      {c.onboardingDocs?.length > 0 && (
+                        <span className={styles.badge} style={{ background: "var(--color-info)14", color: "var(--color-info)", border: "1px solid var(--color-info)30" }}>
+                          {c.onboardingDocs.length} doc{c.onboardingDocs.length > 1 ? "s" : ""}
+                        </span>
+                      )}
                     </div>
-                  )}
-                  <div className={styles.viewAnalysisBtn} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
-                    <Eye size={12} /> View Plan
+                  </div>
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8, flexShrink: 0 }}>
+                    {c.roleReadinessScore != null && (
+                      <div style={{ textAlign: "center", minWidth: 72 }}>
+                        <div className={styles.scoreTag} style={{ color: readinessColor }}>{c.roleReadinessScore}</div>
+                        <div style={{ fontSize: 10, color: "var(--text-muted)", textTransform: "uppercase", letterSpacing: ".06em", marginTop: 3 }}>Readiness</div>
+                      </div>
+                    )}
+                    <div className={styles.viewAnalysisBtn} style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 12 }}>
+                      <Eye size={12} /> View Plan
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })
-      }
+            );
+          })}
+        </div>
+      )}
+
+      {candidates.length === 0 && eligible.length === 0 && (
+        <div className={styles.card} style={{ textAlign: "center", padding: "48px 24px" }}>
+          <div style={{ color: "var(--text-muted)", display: "flex", justifyContent: "center", marginBottom: 12 }}><Rocket size={40} /></div>
+          <p style={{ fontSize: 13, color: "var(--text-muted)" }}>No candidates ready for onboarding yet. Shortlist or hire candidates from your job listings to get started.</p>
+        </div>
+      )}
     </div>
   );
 }
